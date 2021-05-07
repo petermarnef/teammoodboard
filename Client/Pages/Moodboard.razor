@@ -1,0 +1,41 @@
+@page "/moodboard"
+@using MoodBoard.Shared;
+@using Microsoft.AspNetCore.SignalR.Client
+@inject NavigationManager NavigationManager
+@implements IAsyncDisposable
+
+<p>Current count: @currentCount</p>
+
+<button class="btn btn-primary" @onclick="Send">SmileyFace</button>
+
+@code {
+    private int currentCount = 0;
+    private Guid moodboardId = Guid.NewGuid();
+    private Guid subjectId = Guid.NewGuid();
+    private Guid voteId = Guid.NewGuid();
+
+    private HubConnection hubConnection;
+
+    protected override async Task OnInitializedAsync()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/votehub"))
+            .Build();
+
+        hubConnection.On<List<Vote>>("ReceiveVotes", (votes) =>
+        {
+            currentCount = votes.Count();
+            StateHasChanged();
+        });
+
+        await hubConnection.StartAsync();
+    }
+
+    async Task Send() =>
+        await hubConnection.SendAsync("Vote", moodboardId, subjectId, voteId);
+
+    public async ValueTask DisposeAsync()
+    {
+        await hubConnection.DisposeAsync();
+    }
+}
