@@ -24,21 +24,20 @@
 
 @if (showPage)
 {
-    <p>Current count: @currentCount</p>
     <span>moodboardid: @moodboardId</span>
     <div class="container">
         <div class="topic">Team</div>
-        <div class="icon" @onclick="() => ProcessNewVote(VoteType.TeamHappy)">🤠</div>
-        <div class="icon" @onclick="() => ProcessNewVote(VoteType.TeamMeh)">🙂</div>
-        <div class="icon" @onclick="() => ProcessNewVote(VoteType.TeamSad)">😭</div>
+        <div class="icon" @onclick="() => ProcessNewVote(VoteType.TeamHappy)">🤠 (@votes.Count(vote => vote.voteType.Equals(VoteType.TeamHappy)))</div>
+        <div class="icon" @onclick="() => ProcessNewVote(VoteType.TeamMeh)">🙂 (@votes.Count(vote => vote.voteType.Equals(VoteType.TeamMeh)))</div>
+        <div class="icon" @onclick="() => ProcessNewVote(VoteType.TeamSad)">😭 (@votes.Count(vote => vote.voteType.Equals(VoteType.TeamSad)))</div>
         <div class="topic">Process</div>
-        <div class="icon" @onclick="() => ProcessNewVote(VoteType.ProcessHappy)">🤠</div>
-        <div class="icon" @onclick="() => ProcessNewVote(VoteType.ProcessMeh)">🙂</div>
-        <div class="icon" @onclick="() => ProcessNewVote(VoteType.ProcessSad)">😭</div>
+        <div class="icon" @onclick="() => ProcessNewVote(VoteType.ProcessHappy)">🤠 (@votes.Count(vote => vote.voteType.Equals(VoteType.ProcessHappy)))</div>
+        <div class="icon" @onclick="() => ProcessNewVote(VoteType.ProcessMeh)">🙂 (@votes.Count(vote => vote.voteType.Equals(VoteType.ProcessMeh)))</div>
+        <div class="icon" @onclick="() => ProcessNewVote(VoteType.ProcessSad)">😭 (@votes.Count(vote => vote.voteType.Equals(VoteType.ProcessSad)))</div>
         <div class="topic">End result</div>
-        <div class="icon" @onclick="() => ProcessNewVote(VoteType.EndResultHappy)">🤠</div>
-        <div class="icon" @onclick="() => ProcessNewVote(VoteType.EndResultMeh)">🙂</div>
-        <div class="icon" @onclick="() => ProcessNewVote(VoteType.EndResultSad)">😭</div>
+        <div class="icon" @onclick="() => ProcessNewVote(VoteType.EndResultHappy)">🤠 (@votes.Count(vote => vote.voteType.Equals(VoteType.EndResultHappy)))</div>
+        <div class="icon" @onclick="() => ProcessNewVote(VoteType.EndResultMeh)">🙂 (@votes.Count(vote => vote.voteType.Equals(VoteType.EndResultMeh)))</div>
+        <div class="icon" @onclick="() => ProcessNewVote(VoteType.EndResultSad)">😭 (@votes.Count(vote => vote.voteType.Equals(VoteType.EndResultSad)))</div>
     </div>
 }
 
@@ -46,7 +45,7 @@
     [Parameter]
     public string moodboardId { get; set; }
 
-    private int currentCount = 0;
+    private List<Vote> votes = new List<Vote>();
     private bool showPage = false;
 
     private HubConnection voteHub;
@@ -58,9 +57,9 @@
         showPage = true;
     }
 
-    void UpdateClientState(List<Vote> votes)
+    void ProcessReceivedVotes(List<Vote> votes)
     {
-        currentCount = votes.Count();
+        this.votes = votes;
         StateHasChanged();
     }
 
@@ -68,7 +67,7 @@
         voteHub = new HubConnectionBuilder()
             .WithUrl(NavigationManager.ToAbsoluteUri("/votehub"))
             .Build();
-        voteHub.On<List<Vote>>("ReceiveVotes", (votes) => UpdateClientState(votes));
+        voteHub.On<List<Vote>>("ReceiveVotes", (votes) => ProcessReceivedVotes(votes));
         await voteHub.StartAsync();        
         await voteHub.InvokeAsync("AddClientToMoodboard", this.moodboardId);
     }
