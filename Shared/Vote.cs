@@ -2,7 +2,7 @@ using System;
 
 namespace MoodBoard.Shared
 {
-    public record Vote(string moodboardId, VoteType voteType);
+    public record Vote(Guid moodboardId, VoteType voteType);
 
     public enum VoteType
     {

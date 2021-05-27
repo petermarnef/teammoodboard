@@ -1,4 +1,5 @@
-@page "/moodboard/{moodboardId}"
+@page "/moodboard/"
+@page "/moodboard/{moodboardIdParameter}"
 @using MoodBoard.Shared;
 @using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager NavigationManager
@@ -43,24 +44,32 @@
 
 @code {
     [Parameter]
-    public string moodboardId { get; set; }
+    public string moodboardIdParameter { get; set; }
 
     private List<Vote> votes = new List<Vote>();
     private bool showPage = false;
+    private Guid moodboardId;
 
     private HubConnection voteHub;
 
     protected override async Task OnInitializedAsync()
     {
+        GenerateNewMoodboardIdIfNoValidIdFound();
         await RegisterWithServer();
         await GetVotesFromServer();
         showPage = true;
     }
 
-    void ProcessReceivedVotes(List<Vote> votes)
+    void GenerateNewMoodboardIdIfNoValidIdFound()
     {
-        this.votes = votes;
-        StateHasChanged();
+        bool validGuidFound = Guid.TryParse(this.moodboardIdParameter, out this.moodboardId);
+
+        if (!validGuidFound)
+        {
+            var newMoodboardId = Guid.NewGuid();
+            NavigationManager.NavigateTo($"/moodboard/{newMoodboardId}");
+            this.moodboardId = newMoodboardId;
+        }
     }
 
     async Task RegisterWithServer() {
@@ -70,6 +79,12 @@
         voteHub.On<List<Vote>>("ReceiveVotes", (votes) => ProcessReceivedVotes(votes));
         await voteHub.StartAsync();        
         await voteHub.InvokeAsync("AddClientToMoodboard", this.moodboardId);
+    }
+
+    void ProcessReceivedVotes(List<Vote> votes)
+    {
+        this.votes = votes;
+        StateHasChanged();
     }
 
     Task GetVotesFromServer() =>
