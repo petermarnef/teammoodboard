@@ -26,6 +26,17 @@
     .icon.voted {
         opacity: 1;
     }     
+
+    .icon.winner {
+        cursor: default;
+        opacity: 1;
+    }  
+
+    .icon.loser {
+        cursor: default;
+        color: transparent;
+        text-shadow: 0 0 0 black;
+    }          
 </style>
 
 @if (showPage)
@@ -37,17 +48,25 @@
             @foreach (var option in topic.VoteOptions)
             {
                 <div>
-                    <div 
-                        class="icon @(AlreadyVoted(option.Id, topic.Id) ? "voted" : "")" 
-                        @onclick="() => ProcessVote(option.Id, topic)">@option.Emoji (@GetVoteCountForTopicAndOption(topic.Id, option.Id))
+                @if (votingClosed)
+                {
+                    <div class="icon @(IsOptionTopicWinner(option.Id, topic.Id) ? "winner" : "loser")" >
+                        @option.Emoji @GetVoteCountForTopicAndOption(topic.Id, option.Id)
                     </div>
+                }
+                else
+                {
+                    <div class="icon @(AlreadyVoted(option.Id, topic.Id) ? "voted" : "")" 
+                        @onclick="() => ProcessVote(option.Id, topic)">@option.Emoji 
+                    </div>                
+                }
                 </div>
             }
         }
     </div>
-    @if (votedOnAllTopics)
+    @if (votedOnAllTopics && !votingClosed)
     {
-        <button>Show Results</button>
+        <button @onclick="ShowResults">See team result!</button>
     }
 }
 
@@ -62,6 +81,7 @@
     private HubConnection voteHub;
     private Guid sessionId = Guid.NewGuid();
     private bool votedOnAllTopics = false;
+    private bool votingClosed = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -114,10 +134,15 @@
         await voteHub.InvokeAsync("AddClientToMoodboard", this.moodboardId);
     }
 
+    void ShowResults()
+    {
+        votingClosed = true;
+    }
+
     void VotedOnAllTopicsCheck()
     {
         if (votes
-                .Count(vote => vote.MoodboardId == moodboardId && vote.sessionId == sessionId)
+                .Count(vote => vote.sessionId == sessionId)
                 .Equals(configuration.Count() - 1))
         {
             votedOnAllTopics = true;
@@ -132,19 +157,28 @@
 
     int GetVoteCountForTopic(int topicId)
     {
-        return votes.Count(vote => vote.MoodboardId == moodboardId && vote.topicId == topicId);
+        return votes.Count(vote => vote.topicId == topicId);
     }    
 
     int GetVoteCountForTopicAndOption(int topicId, int optionId)
     {
-        return votes.Count(vote => vote.MoodboardId == moodboardId && vote.topicId == topicId && vote.VoteId == optionId); 
-    }        
+        return votes.Count(vote => vote.topicId == topicId && vote.VoteId == optionId); 
+    }
+
+    bool IsOptionTopicWinner(int optionId, int topicId)
+    {
+        return votes
+            .Where(vote => vote.topicId == topicId)
+            .GroupBy(vote => vote.VoteId)
+            .Select(groupByResult => new { VoteId = groupByResult.Key, Count = groupByResult.Count() })
+            .OrderByDescending(result => result.Count)
+            .Any(result => result.VoteId == optionId);
+    }
 
     bool AlreadyVoted(int voteId, int topicId)
     {
         return votes.Any(vote => 
-            vote.MoodboardId == moodboardId
-            && vote.sessionId == sessionId
+            vote.sessionId == sessionId
             && vote.topicId == topicId
             && vote.VoteId == voteId);        
     }
