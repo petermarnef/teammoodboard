@@ -28,17 +28,9 @@
     }     
 
     .icon.alreadyvoted {
-        cursor: not-allowed;
+        cursor: pointer;
         color: gray;
     }        
-
-    .icon.winner {
-        color: red;
-    }
-
-    .icon.loser {
-
-    }    
 </style>
 
 @if (showPage)
@@ -46,14 +38,13 @@
     <div class="container">
         @foreach (var topic in topicConfiguration)
         {
-            var alreadyVotedOnTopic = topicsVotedOn.Contains(topic);
             <div class="topic">@topic.Name</div>
             @foreach (var option in topic.VoteOptions)
             {
                 var voteCountForOption = votes.Count(vote => vote.topicId == topic.Id && vote.VoteId == option.Id);
                 <div 
-                    class="icon @(alreadyVotedOnTopic ? "alreadyvoted" : "notvoted")" 
-                    @onclick="() => ProcessNewVote(option.Id, topic, alreadyVotedOnTopic)">@option.Emoji (@voteCountForOption)
+                    class="icon @(AlreadyVotedOnTopic(topic.Id) ? "alreadyvoted" : "notvoted")" 
+                    @onclick="() => ProcessVote(option.Id, topic)">@option.Emoji (@voteCountForOption)
                 </div>
             }
         }
@@ -66,11 +57,11 @@
     public string moodboardIdParameter { get; set; }
 
     private List<Vote> votes = new List<Vote>();
-    private List<VoteTopic> topicsVotedOn = new List<VoteTopic>();
     private bool showPage = false;
     private Guid moodboardId;
     private List<VoteTopic> topicConfiguration;
     private HubConnection voteHub;
+    private Guid sessionId = Guid.NewGuid();
 
     protected override async Task OnInitializedAsync()
     {
@@ -129,11 +120,16 @@
         StateHasChanged();
     }
 
-    async Task ProcessNewVote(int voteId, VoteTopic topic, bool alreadyVotedOnTopic) {
-        if (!alreadyVotedOnTopic) {
-            topicsVotedOn.Add(topic);
-            await voteHub.SendAsync("ProcessNewVote", moodboardId, topic.Id, voteId);
-        }
+    bool AlreadyVotedOnTopic(int topicId)
+    {
+        return votes.Any(vote => 
+            vote.MoodboardId == moodboardId
+            && vote.sessionId == sessionId
+            && vote.topicId == topicId);        
+    }
+
+    async Task ProcessVote(int voteId, VoteTopic topic) {
+        await voteHub.SendAsync("ProcessVote", new Vote(moodboardId, topic.Id, voteId, sessionId));
     }
 
     Task GetVotesFromServer() =>

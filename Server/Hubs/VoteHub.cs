@@ -19,10 +19,10 @@ namespace MoodBoard.Server.Hubs
         public Task AddClientToMoodboard(Guid moodboardId) =>
             Groups.AddToGroupAsync(Context.ConnectionId, moodboardId.ToString());
 
-        public async Task ProcessNewVote(Guid moodboardId, int topicId, int voteId)
+        public async Task ProcessVote(Vote vote)
         {
-            voteState.AddVote(new Vote(moodboardId, topicId, voteId));
-            await SendUpdateToAllClients(moodboardId);
+            voteState.AddVote(vote);
+            await SendUpdateToAllClients(vote.MoodboardId);
         }
 
         public async Task SendUpdateToAllClients(Guid moodboardId) {
