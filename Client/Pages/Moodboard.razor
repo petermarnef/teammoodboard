@@ -56,11 +56,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        voteHub = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri("/votehub"))
-            .Build();
-        voteHub.On<List<Vote>>("ReceiveVotes", (votes) => UpdateClientState(votes));
-        await voteHub.StartAsync();
         await RegisterWithServer();
         await GetVotesFromServer();
         showPage = true;
@@ -72,8 +67,14 @@
         StateHasChanged();
     }
 
-    Task RegisterWithServer() =>
-        voteHub.InvokeAsync("AddClientToMoodboard", this.moodboardId);
+    async Task RegisterWithServer() {
+        voteHub = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/votehub"))
+            .Build();
+        voteHub.On<List<Vote>>("ReceiveVotes", (votes) => UpdateClientState(votes));
+        await voteHub.StartAsync();        
+        await voteHub.InvokeAsync("AddClientToMoodboard", this.moodboardId);
+    }
 
     Task GetVotesFromServer() =>
         voteHub.InvokeAsync("SendUpdateToAllClientsForMoodboard", this.moodboardId);
