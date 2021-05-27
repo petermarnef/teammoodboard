@@ -29,22 +29,33 @@
 
     .icon.alreadyvoted {
         cursor: not-allowed;
-        color: red;
+        color: gray;
     }        
+
+    .icon.winner {
+        color: red;
+    }
+
+    .icon.loser {
+
+    }    
 </style>
 
 @if (showPage)
 {
     <div class="container">
-        @foreach (var topic in topics)
+        @foreach (var topicToRender in topics)
         {
-            <div class="topic">@topic.Name</div>
-            @foreach (var option in topic.VoteOptions)
+            var alreadyVotedOnTopic = topicsVoted.Contains(topicToRender);
+            var voteOptionsForCurrentTopic = topics.Where(topic => topicToRender.Name == topic.Name).First().VoteOptions;
+            var voteCountForTopic = votes.Where(vote => voteOptionsForCurrentTopic.Any(x => x.Id.Equals(vote.VoteId)));
+            <div class="topic">@topicToRender.Name</div>
+            @foreach (var option in topicToRender.VoteOptions)
             {
-                var alreadyVotedOnTopic = topicsVoted.Contains(topic);
+                var winner = voteCountForTopic.Count() > 0 && voteCountForTopic.GroupBy(vote => vote.VoteId).Select(group => new { VoteId = group.Key, Count = group.Count() }).OrderByDescending(result => result.Count).FirstOrDefault().VoteId == option.Id;
                 <div 
-                    class="icon @(alreadyVotedOnTopic ? "alreadyvoted" : "notvoted")" 
-                    @onclick="() => ProcessNewVote(option.Id, topic, alreadyVotedOnTopic)">@option.Emoji (@votes.Count(vote => vote.VoteId.Equals(option.Id)))
+                    class="icon @(alreadyVotedOnTopic ? "alreadyvoted" : "notvoted") @(winner ? "winner" : "loser")" 
+                    @onclick="() => ProcessNewVote(option.Id, topicToRender, alreadyVotedOnTopic)">@option.Emoji (@votes.Count(vote => vote.VoteId.Equals(option.Id)))
                 </div>
             }
         }
@@ -84,7 +95,7 @@
                 new VoteOption(5, "🙂"),
                 new VoteOption(6, "😭"),
             }),
-            new VoteTopic("EndResult", new List<VoteOption> {
+            new VoteTopic("End result", new List<VoteOption> {
                 new VoteOption(7, "🤠"),
                 new VoteOption(8, "🙂"),
                 new VoteOption(9, "😭"),
