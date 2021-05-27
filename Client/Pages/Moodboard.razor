@@ -61,7 +61,8 @@
             .Build();
         voteHub.On<List<Vote>>("ReceiveVotes", (votes) => UpdateClientState(votes));
         await voteHub.StartAsync();
-        await voteHub.InvokeAsync("UpdateAllClients", this.moodboardId);
+        await RegisterWithServer();
+        await GetVotesFromServer();
         showPage = true;
     }
 
@@ -71,9 +72,15 @@
         StateHasChanged();
     }
 
-    async Task Vote() =>
-        await voteHub.SendAsync("Vote", moodboardId, topicId, voteId);
+    Task RegisterWithServer() =>
+        voteHub.InvokeAsync("AddClientToMoodboard", this.moodboardId);
 
-    public async ValueTask DisposeAsync() =>
-        await voteHub.DisposeAsync();
+    Task GetVotesFromServer() =>
+        voteHub.InvokeAsync("SendUpdateToAllClientsForMoodboard", this.moodboardId);
+
+    Task Vote() =>
+        voteHub.SendAsync("ProcessNewVote", moodboardId, topicId, voteId);
+
+    public ValueTask DisposeAsync() =>
+        voteHub.DisposeAsync();
 }

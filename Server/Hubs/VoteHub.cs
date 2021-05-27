@@ -16,22 +16,18 @@ namespace MoodBoard.Server.Hubs
             this.voteState = voteState;
         }
 
-        public async Task Vote(string moodboardId, Guid topicId, Guid voteId)
+        public Task AddClientToMoodboard(string moodboardId) =>
+            Groups.AddToGroupAsync(Context.ConnectionId, moodboardId);
+
+        public async Task ProcessNewVote(string moodboardId, Guid topicId, Guid voteId)
         {
-            await addClientToMoodboardGroup(moodboardId);
             voteState.AddVote(new Vote(moodboardId, topicId, voteId));
-            await UpdateAllClients(moodboardId);
+            await SendUpdateToAllClientsForMoodboard(moodboardId);
         }
 
-        public async Task UpdateAllClients(string moodboardId) {
-            await addClientToMoodboardGroup(moodboardId);
+        public async Task SendUpdateToAllClientsForMoodboard(string moodboardId) {
             await Clients.Group(moodboardId).SendAsync("ReceiveVotes", 
                 voteState.GetVotes().Where(vote => vote.moodboardId.ToLower().Equals(moodboardId.ToLower())));
-        }
-
-        private async Task addClientToMoodboardGroup(string moodboardId)
-        {
-            await Groups.AddToGroupAsync(Context.ConnectionId, moodboardId);
         }
     }
 }
