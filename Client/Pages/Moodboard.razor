@@ -25,21 +25,20 @@
 @if (showPage)
 {
     <p>Current count: @currentCount</p>
-    <button class="btn btn-primary" @onclick="Vote">SmileyFace</button>
-<span>moodboardid: @moodboardId</span>
+    <span>moodboardid: @moodboardId</span>
     <div class="container">
         <div class="topic">Team</div>
-        <div class="icon">🤠</div>
-        <div class="icon">🙂</div>
-        <div class="icon">😭</div>
+        <div class="icon" @onclick="() => Vote(VoteType.TeamHappy)">🤠</div>
+        <div class="icon" @onclick="() => Vote(VoteType.TeamMeh)">🙂</div>
+        <div class="icon" @onclick="() => Vote(VoteType.TeamSad)">😭</div>
         <div class="topic">Process</div>
-        <div class="icon">🤠</div>
-        <div class="icon">🙂</div>
-        <div class="icon">😭</div>
+        <div class="icon" @onclick="() => Vote(VoteType.ProcessHappy)">🤠</div>
+        <div class="icon" @onclick="() => Vote(VoteType.ProcessMeh)">🙂</div>
+        <div class="icon" @onclick="() => Vote(VoteType.ProcessSad)">😭</div>
         <div class="topic">End result</div>
-        <div class="icon">🤠</div>
-        <div class="icon">🙂</div>
-        <div class="icon">😭</div>
+        <div class="icon" @onclick="() => Vote(VoteType.EndResultHappy)">🤠</div>
+        <div class="icon" @onclick="() => Vote(VoteType.EndResultMeh)">🙂</div>
+        <div class="icon" @onclick="() => Vote(VoteType.EndResultSad)">😭</div>
     </div>
 }
 
@@ -49,8 +48,6 @@
 
     private int currentCount = 0;
     private bool showPage = false;
-    private Guid topicId = Guid.NewGuid();
-    private Guid voteId = Guid.NewGuid();
 
     private HubConnection voteHub;
 
@@ -79,8 +76,8 @@
     Task GetVotesFromServer() =>
         voteHub.InvokeAsync("SendUpdateToAllClientsForMoodboard", this.moodboardId);
 
-    Task Vote() =>
-        voteHub.SendAsync("ProcessNewVote", moodboardId, topicId, voteId);
+    Task Vote(VoteType voteType) =>
+        voteHub.SendAsync("ProcessNewVote", moodboardId, voteType);
 
     public ValueTask DisposeAsync() =>
         voteHub.DisposeAsync();
