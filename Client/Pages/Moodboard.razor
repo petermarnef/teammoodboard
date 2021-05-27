@@ -55,8 +55,8 @@
     protected override async Task OnInitializedAsync()
     {
         voteHub = new HubConnectionBuilder()
-        .WithUrl(NavigationManager.ToAbsoluteUri("/votehub"))
-        .Build();
+            .WithUrl(NavigationManager.ToAbsoluteUri("/votehub"))
+            .Build();
         voteHub.On<List<Vote>>(VoteHubAction.ReceiveVotes, (votes) => UpdateClientState(votes));
         await voteHub.StartAsync();
         await voteHub.InvokeAsync(VoteHubAction.UpdateAllClients);
@@ -70,8 +70,8 @@
     }
 
     async Task Vote() =>
-    await voteHub.SendAsync(VoteHubAction.Vote, moodboardId, topicId, voteId);
+        await voteHub.SendAsync(VoteHubAction.Vote, moodboardId, topicId, voteId);
 
     public async ValueTask DisposeAsync() =>
-    await voteHub.DisposeAsync();
+        await voteHub.DisposeAsync();
 }
