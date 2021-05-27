@@ -4,17 +4,50 @@
 @inject NavigationManager NavigationManager
 @implements IAsyncDisposable
 
+<style>
+    .container {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr 1fr;
+    }
+
+    .topic {
+        min-width: 50px;
+        min-height: 50px;
+    }
+
+    .icon {
+        min-width: 50px;
+        min-height: 50px;
+        font-size: 40px;
+    }
+</style>
+
 @if (showPage)
 {
     <p>Current count: @currentCount</p>
     <button class="btn btn-primary" @onclick="Vote">SmileyFace</button>
+
+    <div class="container">
+        <div class="topic">Team</div>
+        <div class="icon">🤠</div>
+        <div class="icon">🙂</div>
+        <div class="icon">😭</div>
+        <div class="topic">Process</div>
+        <div class="icon">🤠</div>
+        <div class="icon">🙂</div>
+        <div class="icon">😭</div>
+        <div class="topic">End result</div>
+        <div class="icon">🤠</div>
+        <div class="icon">🙂</div>
+        <div class="icon">😭</div>
+    </div>
 }
 
 @code {
     private int currentCount = 0;
     private bool showPage = false;
     private Guid moodboardId = Guid.NewGuid();
-    private Guid subjectId = Guid.NewGuid();
+    private Guid topicId = Guid.NewGuid();
     private Guid voteId = Guid.NewGuid();
 
     private HubConnection voteHub;
@@ -22,8 +55,8 @@
     protected override async Task OnInitializedAsync()
     {
         voteHub = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri("/votehub"))
-            .Build();
+        .WithUrl(NavigationManager.ToAbsoluteUri("/votehub"))
+        .Build();
         voteHub.On<List<Vote>>(VoteHubAction.ReceiveVotes, (votes) => UpdateClientState(votes));
         await voteHub.StartAsync();
         await voteHub.InvokeAsync(VoteHubAction.UpdateAllClients);
@@ -37,7 +70,7 @@
     }
 
     async Task Vote() =>
-    await voteHub.SendAsync(VoteHubAction.Vote, moodboardId, subjectId, voteId);
+    await voteHub.SendAsync(VoteHubAction.Vote, moodboardId, topicId, voteId);
 
     public async ValueTask DisposeAsync() =>
     await voteHub.DisposeAsync();

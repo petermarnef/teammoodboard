@@ -15,9 +15,9 @@ namespace MoodBoard.Server.Hubs
             this.voteState = voteState;
         }
 
-        public async Task Vote(Guid moodboardId, Guid subjectId, Guid voteId)
+        public async Task Vote(Guid moodboardId, Guid topicId, Guid voteId)
         {
-            voteState.AddVote(new Vote(moodboardId, subjectId, voteId));
+            voteState.AddVote(new Vote(moodboardId, topicId, voteId));
             await UpdateAllClients();
         }
 
