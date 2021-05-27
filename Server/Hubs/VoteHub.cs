@@ -25,7 +25,7 @@ namespace MoodBoard.Server.Hubs
 
         public async Task UpdateAllClients(string moodboardId) {
             await Groups.AddToGroupAsync(Context.ConnectionId, moodboardId);
-            await Clients.Group(moodboardId).SendAsync("ReceiveVotes" + moodboardId, 
+            await Clients.Group(moodboardId).SendAsync("ReceiveVotes", 
                 voteState.GetVotes().Where(vote => vote.moodboardId.ToLower().Equals(moodboardId.ToLower())));
         }
     }

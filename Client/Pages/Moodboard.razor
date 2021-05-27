@@ -59,7 +59,7 @@
         voteHub = new HubConnectionBuilder()
             .WithUrl(NavigationManager.ToAbsoluteUri("/votehub"))
             .Build();
-        voteHub.On<List<Vote>>("ReceiveVotes" + moodboardId, (votes) => UpdateClientState(votes));
+        voteHub.On<List<Vote>>("ReceiveVotes", (votes) => UpdateClientState(votes));
         await voteHub.StartAsync();
         await voteHub.InvokeAsync("UpdateAllClients", this.moodboardId);
         showPage = true;
