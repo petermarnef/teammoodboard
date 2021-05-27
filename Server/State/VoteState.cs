@@ -19,14 +19,14 @@ namespace MoodBoard.Server.State
 
         void RemoveDuplicateTopicVote(Vote newVote)
         {
-            var voteToRemove = votes.Where(vote => 
+            var votesToRemove = votes.Where(vote => 
                 vote.MoodboardId == newVote.MoodboardId
                 && vote.topicId == newVote.topicId
                 && vote.sessionId == newVote.sessionId)
-                .SingleOrDefault();
+                .ToList();
 
-            if (voteToRemove != null)
-                votes.Remove(voteToRemove);
+            if (votesToRemove != null && votesToRemove.Count() > 0)
+                votesToRemove.ForEach(voteToRemove => votes.Remove(voteToRemove));
         }
     }
 }
