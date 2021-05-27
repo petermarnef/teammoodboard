@@ -41,7 +41,7 @@
             <div class="topic">@topic.Name</div>
             @foreach (var option in topic.VoteOptions)
             {
-                var alreadyVotedOnTopic = topicsVoted.Any(topicVoted => topicVoted == topic);
+                var alreadyVotedOnTopic = topicsVoted.Contains(topic);
                 <div 
                     class="icon @(alreadyVotedOnTopic ? "alreadyvoted" : "notvoted")" 
                     @onclick="() => ProcessNewVote(option.Id, topic, alreadyVotedOnTopic)">@option.Emoji (@votes.Count(vote => vote.VoteId.Equals(option.Id)))
@@ -65,13 +65,13 @@
     protected override async Task OnInitializedAsync()
     {
         GenerateNewMoodboardIdIfNoValidIdFound();
-        InitializeVoteTopics();
+        InitializeVotingTopics();
         await RegisterWithServer();
         await GetVotesFromServer();
         showPage = true;
     }
 
-    void InitializeVoteTopics()
+    void InitializeVotingTopics()
     {
         this.topics = new List<VoteTopic> {
             new VoteTopic("Team", new List<VoteOption> {
