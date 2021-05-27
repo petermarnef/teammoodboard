@@ -44,22 +44,21 @@
 @if (showPage)
 {
     <div class="container">
-        @foreach (var topicToRender in topics)
+        @foreach (var topic in topicConfiguration)
         {
-            var alreadyVotedOnTopic = topicsVoted.Contains(topicToRender);
-            var voteOptionsForCurrentTopic = topics.Where(topic => topicToRender.Name == topic.Name).First().VoteOptions;
-            var voteCountForTopic = votes.Where(vote => voteOptionsForCurrentTopic.Any(x => x.Id.Equals(vote.VoteId)));
-            <div class="topic">@topicToRender.Name</div>
-            @foreach (var option in topicToRender.VoteOptions)
+            var alreadyVotedOnTopic = topicsVotedOn.Contains(topic);
+            <div class="topic">@topic.Name</div>
+            @foreach (var option in topic.VoteOptions)
             {
-                var winner = voteCountForTopic.Count() > 0 && voteCountForTopic.GroupBy(vote => vote.VoteId).Select(group => new { VoteId = group.Key, Count = group.Count() }).OrderByDescending(result => result.Count).FirstOrDefault().VoteId == option.Id;
+                var voteCountForOption = votes.Count(vote => vote.topicId == topic.Id && vote.VoteId == option.Id);
                 <div 
-                    class="icon @(alreadyVotedOnTopic ? "alreadyvoted" : "notvoted") @(winner ? "winner" : "loser")" 
-                    @onclick="() => ProcessNewVote(option.Id, topicToRender, alreadyVotedOnTopic)">@option.Emoji (@votes.Count(vote => vote.VoteId.Equals(option.Id)))
+                    class="icon @(alreadyVotedOnTopic ? "alreadyvoted" : "notvoted")" 
+                    @onclick="() => ProcessNewVote(option.Id, topic, alreadyVotedOnTopic)">@option.Emoji (@voteCountForOption)
                 </div>
             }
         }
     </div>
+    <button>Show Results (only visible after you voted on all topics)</button>
 }
 
 @code {
@@ -67,10 +66,10 @@
     public string moodboardIdParameter { get; set; }
 
     private List<Vote> votes = new List<Vote>();
-    private List<VoteTopic> topicsVoted = new List<VoteTopic>();
+    private List<VoteTopic> topicsVotedOn = new List<VoteTopic>();
     private bool showPage = false;
     private Guid moodboardId;
-    private List<VoteTopic> topics;
+    private List<VoteTopic> topicConfiguration;
     private HubConnection voteHub;
 
     protected override async Task OnInitializedAsync()
@@ -84,21 +83,21 @@
 
     void InitializeVotingTopics()
     {
-        this.topics = new List<VoteTopic> {
-            new VoteTopic("Team", new List<VoteOption> {
+        this.topicConfiguration = new List<VoteTopic> {
+            new VoteTopic(1, "Team", new List<VoteOption> {
                 new VoteOption(1, "🤠"),
                 new VoteOption(2, "🙂"),
                 new VoteOption(3, "😭"),
             }),
-            new VoteTopic("Process", new List<VoteOption> {
-                new VoteOption(4, "🤠"),
-                new VoteOption(5, "🙂"),
-                new VoteOption(6, "😭"),
+            new VoteTopic(2, "Process", new List<VoteOption> {
+                new VoteOption(1, "🤠"),
+                new VoteOption(2, "🙂"),
+                new VoteOption(3, "😭"),
             }),
-            new VoteTopic("End result", new List<VoteOption> {
-                new VoteOption(7, "🤠"),
-                new VoteOption(8, "🙂"),
-                new VoteOption(9, "😭"),
+            new VoteTopic(3, "End result", new List<VoteOption> {
+                new VoteOption(1, "🤠"),
+                new VoteOption(2, "🙂"),
+                new VoteOption(3, "😭"),
             })
         };
     }
@@ -130,11 +129,10 @@
         StateHasChanged();
     }
 
-    async Task ProcessNewVote(int voteResult, VoteTopic voteTopic, bool alreadyVotedOnTopic) {
-        if (!alreadyVotedOnTopic)
-        {
-            topicsVoted.Add(voteTopic);
-            await voteHub.SendAsync("ProcessNewVote", moodboardId, voteResult);
+    async Task ProcessNewVote(int voteId, VoteTopic topic, bool alreadyVotedOnTopic) {
+        if (!alreadyVotedOnTopic) {
+            topicsVotedOn.Add(topic);
+            await voteHub.SendAsync("ProcessNewVote", moodboardId, topic.Id, voteId);
         }
     }
 
