@@ -22,10 +22,10 @@ namespace MoodBoard.Server.Hubs
         public async Task ProcessNewVote(Guid moodboardId, int voteId)
         {
             voteState.AddVote(new Vote(moodboardId, voteId));
-            await SendUpdateToAllClientsForMoodboard(moodboardId);
+            await SendUpdateToAllClients(moodboardId);
         }
 
-        public async Task SendUpdateToAllClientsForMoodboard(Guid moodboardId) {
+        public async Task SendUpdateToAllClients(Guid moodboardId) {
             await Clients.Group(moodboardId.ToString()).SendAsync("ReceiveVotes", 
                 voteState.GetVotes().Where(vote => vote.MoodboardId.ToString().ToLower().Equals(moodboardId.ToString().ToLower())));
         }

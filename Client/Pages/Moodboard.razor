@@ -1,6 +1,7 @@
 @page "/moodboard/"
 @page "/moodboard/{moodboardIdParameter}"
 @using MoodBoard.Shared;
+@using MoodBoard.Models;
 @using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager NavigationManager
 @implements IAsyncDisposable
@@ -21,17 +22,30 @@
         min-height: 50px;
         font-size: 40px;
     }
+
+    .icon.notvoted {
+        cursor: pointer;
+    }     
+
+    .icon.alreadyvoted {
+        cursor: not-allowed;
+        color: red;
+    }        
 </style>
 
 @if (showPage)
 {
     <div class="container">
-        @foreach (var voteTopic in voteTopics)
+        @foreach (var topic in topics)
         {
-            <div class="topic">@voteTopic.Name</div>
-            @foreach (var voteOption in voteTopic.VoteOptions)
+            <div class="topic">@topic.Name</div>
+            @foreach (var option in topic.VoteOptions)
             {
-                <div class="icon" @onclick="() => ProcessNewVote(voteOption.Id)">🤠 (@votes.Count(vote => vote.VoteId.Equals(voteOption.Id)))</div>
+                var alreadyVotedOnTopic = topicsVoted.Any(topicVoted => topicVoted == topic);
+                <div 
+                    class="icon @(alreadyVotedOnTopic ? "alreadyvoted" : "notvoted")" 
+                    @onclick="() => ProcessNewVote(option.Id, topic, alreadyVotedOnTopic)">@option.Emoji (@votes.Count(vote => vote.VoteId.Equals(option.Id)))
+                </div>
             }
         }
     </div>
@@ -42,10 +56,10 @@
     public string moodboardIdParameter { get; set; }
 
     private List<Vote> votes = new List<Vote>();
+    private List<VoteTopic> topicsVoted = new List<VoteTopic>();
     private bool showPage = false;
     private Guid moodboardId;
-    private List<VoteTopic> voteTopics;
-
+    private List<VoteTopic> topics;
     private HubConnection voteHub;
 
     protected override async Task OnInitializedAsync()
@@ -59,7 +73,7 @@
 
     void InitializeVoteTopics()
     {
-        this.voteTopics = new List<VoteTopic> {
+        this.topics = new List<VoteTopic> {
             new VoteTopic("Team", new List<VoteOption> {
                 new VoteOption(1, "🤠"),
                 new VoteOption(2, "🙂"),
@@ -105,11 +119,16 @@
         StateHasChanged();
     }
 
-    Task GetVotesFromServer() =>
-        voteHub.InvokeAsync("SendUpdateToAllClientsForMoodboard", this.moodboardId);
+    async Task ProcessNewVote(int voteResult, VoteTopic voteTopic, bool alreadyVotedOnTopic) {
+        if (!alreadyVotedOnTopic)
+        {
+            topicsVoted.Add(voteTopic);
+            await voteHub.SendAsync("ProcessNewVote", moodboardId, voteResult);
+        }
+    }
 
-    Task ProcessNewVote(int voteResult) =>
-        voteHub.SendAsync("ProcessNewVote", moodboardId, voteResult);
+    Task GetVotesFromServer() =>
+        voteHub.InvokeAsync("SendUpdateToAllClients", this.moodboardId);
 
     public ValueTask DisposeAsync() =>
         voteHub.DisposeAsync();
