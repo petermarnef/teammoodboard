@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using MoodBoard.Server.State;
 using MoodBoard.Shared;
+using System.Linq;
 
 namespace MoodBoard.Server.Hubs
 {
@@ -15,13 +16,17 @@ namespace MoodBoard.Server.Hubs
             this.voteState = voteState;
         }
 
-        public async Task Vote(Guid moodboardId, Guid topicId, Guid voteId)
+        public async Task Vote(string moodboardId, Guid topicId, Guid voteId)
         {
+            await Groups.AddToGroupAsync(Context.ConnectionId, moodboardId);
             voteState.AddVote(new Vote(moodboardId, topicId, voteId));
-            await UpdateAllClients();
+            await UpdateAllClients(moodboardId);
         }
 
-        public async Task UpdateAllClients() => 
-            await Clients.All.SendAsync(VoteHubAction.ReceiveVotes, voteState.GetVotes());
+        public async Task UpdateAllClients(string moodboardId) {
+            await Groups.AddToGroupAsync(Context.ConnectionId, moodboardId);
+            await Clients.Group(moodboardId).SendAsync("ReceiveVotes" + moodboardId, 
+                voteState.GetVotes().Where(vote => vote.moodboardId.ToLower().Equals(moodboardId.ToLower())));
+        }
     }
 }
