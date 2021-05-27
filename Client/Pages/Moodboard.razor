@@ -46,7 +46,10 @@
             }
         }
     </div>
-    <button>Show Results (only visible after you voted on all topics)</button>
+    @if (votedOnAllTopics)
+    {
+        <button>Show Results</button>
+    }
 }
 
 @code {
@@ -59,6 +62,7 @@
     private List<VoteTopic> topicConfiguration;
     private HubConnection voteHub;
     private Guid sessionId = Guid.NewGuid();
+    private bool votedOnAllTopics = false;
 
     protected override async Task OnInitializedAsync()
     {
@@ -111,6 +115,16 @@
         await voteHub.InvokeAsync("AddClientToMoodboard", this.moodboardId);
     }
 
+    void VotedOnAllTopicsCheck()
+    {
+        if (votes
+                .Count(vote => vote.MoodboardId == moodboardId && vote.sessionId == sessionId)
+                .Equals(topicConfiguration.Count() - 1))
+        {
+            votedOnAllTopics = true;
+        }
+    }
+
     void ProcessReceivedVotes(List<Vote> votes)
     {
         this.votes = votes;
@@ -128,6 +142,7 @@
 
     async Task ProcessVote(int voteId, VoteTopic topic) {
         await voteHub.SendAsync("ProcessVote", new Vote(moodboardId, topic.Id, voteId, sessionId));
+        VotedOnAllTopicsCheck();
     }
 
     Task GetVotesFromServer() =>
