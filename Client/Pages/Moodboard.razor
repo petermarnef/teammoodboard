@@ -35,7 +35,7 @@
     .icon.loser {
         cursor: default;
         color: transparent;
-        text-shadow: 0 0 0 black;
+        text-shadow: 0 0 0 gray;
     }          
 </style>
 
@@ -50,8 +50,9 @@
                 <div>
                 @if (votingClosed)
                 {
-                    <div class="icon @(IsOptionTopicWinner(option.Id, topic.Id) ? "winner" : "loser")" >
-                        @option.Emoji @GetVoteCountForTopicAndOption(topic.Id, option.Id)
+                    var voteCountForTopic = GetVoteCountForTopicAndOption(topic.Id, option.Id);
+                    <div class="icon @(voteCountForTopic > 0 ? "winner" : "loser")" >
+                        @option.Emoji @voteCountForTopic
                     </div>
                 }
                 else
@@ -163,16 +164,6 @@
     int GetVoteCountForTopicAndOption(int topicId, int optionId)
     {
         return votes.Count(vote => vote.topicId == topicId && vote.VoteId == optionId); 
-    }
-
-    bool IsOptionTopicWinner(int optionId, int topicId)
-    {
-        return votes
-            .Where(vote => vote.topicId == topicId)
-            .GroupBy(vote => vote.VoteId)
-            .Select(groupByResult => new { VoteId = groupByResult.Key, Count = groupByResult.Count() })
-            .OrderByDescending(result => result.Count)
-            .Any(result => result.VoteId == optionId);
     }
 
     bool AlreadyVoted(int voteId, int topicId)
