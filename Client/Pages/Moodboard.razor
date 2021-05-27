@@ -4,38 +4,41 @@
 @inject NavigationManager NavigationManager
 @implements IAsyncDisposable
 
-<p>Current count: @currentCount</p>
-
-<button class="btn btn-primary" @onclick="Send">SmileyFace</button>
+@if (showPage)
+{
+    <p>Current count: @currentCount</p>
+    <button class="btn btn-primary" @onclick="Vote">SmileyFace</button>
+}
 
 @code {
     private int currentCount = 0;
+    private bool showPage = false;
     private Guid moodboardId = Guid.NewGuid();
     private Guid subjectId = Guid.NewGuid();
     private Guid voteId = Guid.NewGuid();
 
-    private HubConnection hubConnection;
+    private HubConnection voteHub;
 
     protected override async Task OnInitializedAsync()
     {
-        hubConnection = new HubConnectionBuilder()
+        voteHub = new HubConnectionBuilder()
             .WithUrl(NavigationManager.ToAbsoluteUri("/votehub"))
             .Build();
-
-        hubConnection.On<List<Vote>>("ReceiveVotes", (votes) =>
-        {
-            currentCount = votes.Count();
-            StateHasChanged();
-        });
-
-        await hubConnection.StartAsync();
+        voteHub.On<List<Vote>>(VoteHubAction.ReceiveVotes, (votes) => UpdateClientState(votes));
+        await voteHub.StartAsync();
+        await voteHub.InvokeAsync(VoteHubAction.UpdateAllClients);
+        showPage = true;
     }
 
-    async Task Send() =>
-        await hubConnection.SendAsync("Vote", moodboardId, subjectId, voteId);
-
-    public async ValueTask DisposeAsync()
+    void UpdateClientState(List<Vote> votes)
     {
-        await hubConnection.DisposeAsync();
+        currentCount = votes.Count();
+        StateHasChanged();
     }
+
+    async Task Vote() =>
+    await voteHub.SendAsync(VoteHubAction.Vote, moodboardId, subjectId, voteId);
+
+    public async ValueTask DisposeAsync() =>
+    await voteHub.DisposeAsync();
 }

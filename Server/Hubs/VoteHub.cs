@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.SignalR;
 using MoodBoard.Server.State;
@@ -19,7 +18,10 @@ namespace MoodBoard.Server.Hubs
         public async Task Vote(Guid moodboardId, Guid subjectId, Guid voteId)
         {
             voteState.AddVote(new Vote(moodboardId, subjectId, voteId));
-            await Clients.All.SendAsync("ReceiveVotes", voteState.GetVotes());
+            await UpdateAllClients();
         }
+
+        public async Task UpdateAllClients() => 
+            await Clients.All.SendAsync(VoteHubAction.ReceiveVotes, voteState.GetVotes());
     }
 }
