@@ -2,7 +2,7 @@
 
 A web app you can use to measure the mood of your team. The app is deployed, and free to use, on https://moodboard.com.
 
-This app is build with [ASP.NET Core Blazor](https://docs.microsoft.com/en-us/aspnet/core/blazor/?view=aspnetcore-5.0) (WebAssembly) and [SignalR](https://docs.microsoft.com/en-us/aspnet/core/signalr/introduction).
+This app is build with [ASP.NET Core Blazor](https://docs.microsoft.com/en-us/aspnet/core/blazor) (webassembly) and [SignalR](https://docs.microsoft.com/en-us/aspnet/core/signalr/introduction).
 
 ## How to get started contributing code
 
