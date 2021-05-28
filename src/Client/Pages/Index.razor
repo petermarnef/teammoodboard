@@ -46,6 +46,7 @@
     .topic .voteCount {
         font-family: FjallaOne, Arial, Helvetica, sans-serif;
         font-size: 0.5em;
+        color: gray;
     }    
 
     .icon {
@@ -86,7 +87,7 @@
     <div class="container">
         @foreach (var topic in configuration)
         {
-            <div class="topic">@topic.Name <span hidden="@(votingClosed)" class="voteCount">@GetVoteCountForTopic(topic.Id)</span></div>
+            <div class="topic">@topic.Name <span class="voteCount">@GetVoteCountForTopic(topic.Id)</span></div>
             @foreach (var option in topic.VoteOptions)
             {
                 <div>
