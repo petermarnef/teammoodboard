@@ -12,7 +12,7 @@ az appservice plan create \
     --resource-group $RESOURCE_GROUP \
     --name $APP_SERVICE_PLAN \
     --is-linux \
-    --sku S1
+    --sku B1
 
 echo "Creating Web App $WEB_APP"
 az webapp create \
