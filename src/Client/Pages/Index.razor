@@ -80,6 +80,10 @@
         font-size: 0.8em;
         text-shadow: none;
     }   
+
+    .icon .voteCount.placeholder {
+        visibility: hidden;
+    }      
 </style>
 
 @if (showPage)
@@ -101,7 +105,7 @@
                 else
                 {
                     <div class="icon @(AlreadyVoted(option.Id, topic.Id) ? "voted" : "")" 
-                        @onclick="() => ProcessVote(option.Id, topic)">@option.Emoji
+                        @onclick="() => ProcessVote(option.Id, topic)">@option.Emoji <span class="voteCount placeholder">?</span>
                     </div>                
                 }
                 </div>
