@@ -1,6 +1,6 @@
 # Team Moodboard
 
-A web app you can use to measure the mood of your team. The app is deployed, and free to use, on https://moodboard.com.
+A web app you can use to measure the mood of your team. The app is deployed, and free to use, on https://teammoodboard.com.
 
 This app is build with [ASP.NET Core Blazor](https://docs.microsoft.com/en-us/aspnet/core/blazor) (webassembly) and [SignalR](https://docs.microsoft.com/en-us/aspnet/core/signalr/introduction).
 
@@ -38,7 +38,7 @@ This app is build with [ASP.NET Core Blazor](https://docs.microsoft.com/en-us/as
   - Replace "Loading..." when loading the app with something cool
   - Overall design
   - Nicer animation when clicking on an icon
-  - Animdation when pushing button to see team results
+  - Animation when pushing button to see team results
 - Make the app responsive, also on mobile
 - Make topics and vote options configurable when creating a new moodboard
 - Do some SEO
