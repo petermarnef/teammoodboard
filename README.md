@@ -37,6 +37,8 @@ This app is build with [ASP.NET Core Blazor](https://docs.microsoft.com/en-us/as
   - Style 'See team results' button
   - Replace "Loading..." when loading the app with something cool
   - Overall design
+  - Nicer animation when clicking on an icon
+  - Animdation when pushing button to see team results
 - Make the app responsive, also on mobile
 - Make topics and vote options configurable when creating a new moodboard
 - Move the state of the application out of the web app
