@@ -46,6 +46,7 @@ namespace MoodBoard.Server
                 app.UseHsts();
             }
 
+            app.UseStaticFiles();
             app.UseHttpsRedirection();
             app.UseBlazorFrameworkFiles();
 

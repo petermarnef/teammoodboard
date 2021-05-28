@@ -7,6 +7,16 @@
 @implements IAsyncDisposable
 
 <style>
+    ::selection {
+        color: none;
+        background: none;
+    }
+
+    @@font-face {
+        font-family: "FjallaOne";
+        src: url("fonts/FjallaOne-Regular.ttf") format("truetype");
+    }
+
     @@keyframes flip-scale-down {
         0% {
             transform: scale(1) rotate3d(-1, 1, 0, 0deg);
@@ -25,16 +35,23 @@
         display: grid;
         grid-template-columns: 1fr 1fr 1fr 1fr;
         place-items: center;
+        row-gap: 3em;
     }
 
     .topic {
-        font-size: 2em;
+        font-family: FjallaOne, Arial, Helvetica, sans-serif;
+        font-size: 2.5em;
     }
+
+    .topic .voteCount {
+        font-family: FjallaOne, Arial, Helvetica, sans-serif;
+        font-size: 0.5em;
+    }    
 
     .icon {
         cursor: pointer;
         font-size: 4em;
-        opacity: .6;
+        opacity: .5;
         padding: 10px;
     }
 
@@ -42,7 +59,7 @@
         opacity: 1;
         text-shadow: 2px 2px lightgray;
         animation: flip-scale-down 0.4s linear both;
-    }     
+    } 
 
     .icon.winner {
         cursor: default;
@@ -54,7 +71,14 @@
         cursor: default;
         color: transparent;
         text-shadow: 0 0 0 gray;
-    }          
+    }      
+
+    .icon .voteCount {
+        margin-left: 5px;
+        font-family: FjallaOne, Arial, Helvetica, sans-serif;
+        font-size: 0.8em;
+        text-shadow: none;
+    }   
 </style>
 
 @if (showPage)
@@ -62,21 +86,21 @@
     <div class="container">
         @foreach (var topic in configuration)
         {
-            <div class="topic">@topic.Name (@GetVoteCountForTopic(topic.Id))</div>
+            <div class="topic">@topic.Name <span hidden="@(votingClosed)" class="voteCount">@GetVoteCountForTopic(topic.Id)</span></div>
             @foreach (var option in topic.VoteOptions)
             {
                 <div>
                 @if (votingClosed)
                 {
-                    var voteCountForTopic = GetVoteCountForTopicAndOption(topic.Id, option.Id);
-                    <div class="icon @(voteCountForTopic > 0 ? "winner" : "loser")">
-                        @option.Emoji @voteCountForTopic
+                    var voteCountForOption = GetVoteCountForOption(topic.Id, option.Id);
+                    <div class="icon @(voteCountForOption > 0 ? "winner" : "loser")">
+                        @option.Emoji <span class="voteCount">@voteCountForOption</span>
                     </div>
                 }
                 else
                 {
                     <div class="icon @(AlreadyVoted(option.Id, topic.Id) ? "voted" : "")" 
-                        @onclick="() => ProcessVote(option.Id, topic)">@option.Emoji 
+                        @onclick="() => ProcessVote(option.Id, topic)">@option.Emoji
                     </div>                
                 }
                 </div>
@@ -187,7 +211,7 @@
         return votes.Count(vote => vote.topicId == topicId);
     }    
 
-    int GetVoteCountForTopicAndOption(int topicId, int optionId)
+    int GetVoteCountForOption(int topicId, int optionId)
     {
         return votes.Count(vote => vote.topicId == topicId && vote.VoteId == optionId); 
     }
