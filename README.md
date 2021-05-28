@@ -41,6 +41,7 @@ This app is build with [ASP.NET Core Blazor](https://docs.microsoft.com/en-us/as
   - Animdation when pushing button to see team results
 - Make the app responsive, also on mobile
 - Make topics and vote options configurable when creating a new moodboard
+- Do some SEO
 - Move the state of the application out of the web app
 - Cleanup the basic `dotnet new` template some more
   - Client error handling
