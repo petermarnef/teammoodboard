@@ -24,16 +24,19 @@ html {
 }
 
 #header {
+  margin: 20px;
 }
 
 #app {
+  margin: 20px;
 }
 
 #footer {
   color: gray;
   text-align: center;
   font-size: 0.8em;
-  margin-top: 60px;
+  margin-top: 40px;
+  margin-bottom: 20px;
 }
 
 #footer a {

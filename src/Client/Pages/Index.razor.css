@@ -16,11 +16,7 @@
     display: grid;
     grid-template-columns: 2fr 1fr 1fr 1fr;
     place-items: center;
-    row-gap: 2.5em;
-}
-
-.button {
-    font-size: 1.4em;
+    row-gap: 2em;
 }
 
 .topic {
@@ -68,4 +64,15 @@
 
 .icon .voteCount.placeholder {
     visibility: hidden;
+}
+
+.teamResultsButton {
+    text-align: center;
+    margin-top: 30px;
+}
+
+.teamResultsButton button {
+    font-size: 1.2em;
+    font-weight: bold;
+    padding: 10px;
 }

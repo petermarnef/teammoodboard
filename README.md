@@ -32,12 +32,11 @@ This app is build with [ASP.NET Core Blazor](https://docs.microsoft.com/en-us/as
 ## Todo
 
 - Work on the UI/UX
-  - Replace favicon
   - Style info text
   - Style 'See team results' button
   - Replace "Loading..." when loading the app with something cool
   - Overall design
-  - Nicer animation when clicking on an icon
+  - Nicer animation when clicking on an icon + make it work on mobile
   - Animation when pushing button to see team results
 - Make the app responsive, also on mobile
 - Make topics and vote options configurable when creating a new moodboard

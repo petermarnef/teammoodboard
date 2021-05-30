@@ -15,27 +15,29 @@
             @foreach (var option in topic.VoteOptions)
             {
                 <div>
-                @if (votingClosed)
-                {
-                    var voteCountForOption = GetVoteCountForOption(topic.Id, option.Id);
-                    <div class="icon @(voteCountForOption > 0 ? "winner" : "loser")">
-                        @option.Emoji <span class="voteCount">@voteCountForOption</span>
-                    </div>
-                }
-                else
-                {
-                    <div class="icon @(AlreadyVotedCheck(option.Id, topic.Id) ? "voted" : "")" 
-                        @onclick="() => ProcessVote(option.Id, topic)">@option.Emoji <span class="voteCount placeholder">?</span>
-                    </div>                
-                }
+                    @if (votingClosed)
+                    {
+                        var voteCountForOption = GetVoteCountForOption(topic.Id, option.Id);
+                        <div class="icon @(voteCountForOption > 0 ? "winner" : "loser")">
+                            @option.Emoji <span class="voteCount">@voteCountForOption</span>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="icon @(AlreadyVotedCheck(option.Id, topic.Id) ? "voted" : "")"
+            @onclick="() => ProcessVote(option.Id, topic)">@option.Emoji <span class="voteCount placeholder">?</span>
+                        </div>
+                    }
                 </div>
             }
         }
     </div>
     @if (votedOnAllTopics && !votingClosed)
     {
-        <button class="button" @onclick="ShowResults">Click to see team results!</button>
-    }        
+        <div class="teamResultsButton">
+            <button @onclick="ShowResults">Click to see team results!</button>
+        </div>
+    }
 }
 
 @code {
@@ -66,27 +68,27 @@
         //For additional voting options changes are needed
 
         this.configuration = new List<VoteTopic> {
-            new VoteTopic(1, "Team", new List<VoteOption> {
-                new VoteOption(1, "🤠"),
-                new VoteOption(2, "🙂"),
-                new VoteOption(3, "😭")
-            }),
-            new VoteTopic(2, "Process", new List<VoteOption> {
-                new VoteOption(1, "🤠"),
-                new VoteOption(2, "🙂"),
-                new VoteOption(3, "😭")
-            }),
-            new VoteTopic(3, "End result", new List<VoteOption> {
-                new VoteOption(1, "🤠"),
-                new VoteOption(2, "🙂"),
-                new VoteOption(3, "😭")
-            }),
-            new VoteTopic(4, "How I felt", new List<VoteOption> {
-                new VoteOption(1, "😎"),
-                new VoteOption(2, "😖"),
-                new VoteOption(3, "😤")
-            })
-        };
+new VoteTopic(1, "Team", new List<VoteOption> {
+new VoteOption(1, "🤠"),
+new VoteOption(2, "🙂"),
+new VoteOption(3, "😭")
+}),
+new VoteTopic(2, "Process", new List<VoteOption> {
+new VoteOption(1, "🤠"),
+new VoteOption(2, "🙂"),
+new VoteOption(3, "😭")
+}),
+new VoteTopic(3, "End result", new List<VoteOption> {
+new VoteOption(1, "🤠"),
+new VoteOption(2, "🙂"),
+new VoteOption(3, "😭")
+}),
+new VoteTopic(4, "How I felt", new List<VoteOption> {
+new VoteOption(1, "😎"),
+new VoteOption(2, "😖"),
+new VoteOption(3, "😤")
+})
+};
     }
 
     void GenerateNewMoodboardIdIfNoValidIdFound()
@@ -101,12 +103,13 @@
         }
     }
 
-    async Task RegisterWithServer() {
+    async Task RegisterWithServer()
+    {
         voteHub = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri("/votehub"))
-            .Build();
+        .WithUrl(NavigationManager.ToAbsoluteUri("/votehub"))
+        .Build();
         voteHub.On<List<Vote>>("ReceiveVotes", (votes) => ProcessReceivedVotes(votes));
-        await voteHub.StartAsync();        
+        await voteHub.StartAsync();
         await voteHub.InvokeAsync("AddClientToMoodboard", this.moodboardId);
     }
 
@@ -118,8 +121,8 @@
     void VotedOnAllTopicsCheck()
     {
         if (votes
-                .Count(vote => vote.sessionId == sessionId)
-                .Equals(configuration.Count()))
+        .Count(vote => vote.sessionId == sessionId)
+        .Equals(configuration.Count()))
         {
             votedOnAllTopics = true;
         }
@@ -135,27 +138,27 @@
     int GetVoteCountForTopic(int topicId)
     {
         return votes.Count(vote => vote.topicId == topicId);
-    }    
+    }
 
     int GetVoteCountForOption(int topicId, int optionId)
     {
-        return votes.Count(vote => vote.topicId == topicId && vote.VoteId == optionId); 
+        return votes.Count(vote => vote.topicId == topicId && vote.VoteId == optionId);
     }
 
     bool AlreadyVotedCheck(int voteId, int topicId)
     {
-        return votes.Any(vote => 
-            vote.sessionId == sessionId
-            && vote.topicId == topicId
-            && vote.VoteId == voteId);        
+        return votes.Any(vote =>
+        vote.sessionId == sessionId
+        && vote.topicId == topicId
+        && vote.VoteId == voteId);
     }
 
     Task ProcessVote(int voteId, VoteTopic topic) =>
-        voteHub.SendAsync("ProcessVote", new Vote(moodboardId, topic.Id, voteId, sessionId));
+    voteHub.SendAsync("ProcessVote", new Vote(moodboardId, topic.Id, voteId, sessionId));
 
     Task GetVotesFromServer() =>
-        voteHub.InvokeAsync("SendUpdateToAllClients", this.moodboardId);
+    voteHub.InvokeAsync("SendUpdateToAllClients", this.moodboardId);
 
     public ValueTask DisposeAsync() =>
-        voteHub.DisposeAsync();
+    voteHub.DisposeAsync();
 }
