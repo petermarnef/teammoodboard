@@ -1,0 +1,25 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+body,
+html {
+     height: 100%; 
+}
+
+#siteContainer {
+    height: 100%;
+}
+
+#header {
+
+}
+
+#app {
+
+}
+
+#footer {
+
+}

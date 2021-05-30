@@ -20,7 +20,7 @@ This app is build with [ASP.NET Core Blazor](https://docs.microsoft.com/en-us/as
 ### Main files
 
 - On the Client
-  - `/src/Client/Pages/Index.razor` - this file contains the entire client app (css and code)
+  - `/src/Client/Pages/Index.razor` - this file contains most of the client code
 - On the Server
   - `/src/Server/Hubs/VoteHub.cs` - this file is the SignalR hub which is the gateway for the backend code
 
