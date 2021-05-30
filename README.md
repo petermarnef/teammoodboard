@@ -26,7 +26,7 @@ This app is build with [ASP.NET Core Blazor](https://docs.microsoft.com/en-us/as
 
 ## Deployment
 
-- Code commited to the `production` branch is automatically deployed to https://moodboard.com
+- Code commited to the `production` branch is automatically deployed to https://teammoodboard.com
 - The main reason the `production` branch is deployed and not `master` is that we want to limit production deploys as the current state of the application is held in memory - and as such, a deploy wipes the state and all ongoing moodboards
 
 ## Todo
