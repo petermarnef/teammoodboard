@@ -24,7 +24,7 @@
                 }
                 else
                 {
-                    <div class="icon @(AlreadyVoted(option.Id, topic.Id) ? "voted" : "")" 
+                    <div class="icon @(AlreadyVotedCheck(option.Id, topic.Id) ? "voted" : "")" 
                         @onclick="() => ProcessVote(option.Id, topic)">@option.Emoji <span class="voteCount placeholder">?</span>
                     </div>                
                 }
@@ -119,7 +119,7 @@
     {
         if (votes
                 .Count(vote => vote.sessionId == sessionId)
-                .Equals(configuration.Count() - 1))
+                .Equals(configuration.Count()))
         {
             votedOnAllTopics = true;
         }
@@ -128,6 +128,7 @@
     void ProcessReceivedVotes(List<Vote> votes)
     {
         this.votes = votes;
+        VotedOnAllTopicsCheck();
         StateHasChanged();
     }
 
@@ -141,7 +142,7 @@
         return votes.Count(vote => vote.topicId == topicId && vote.VoteId == optionId); 
     }
 
-    bool AlreadyVoted(int voteId, int topicId)
+    bool AlreadyVotedCheck(int voteId, int topicId)
     {
         return votes.Any(vote => 
             vote.sessionId == sessionId
@@ -149,10 +150,8 @@
             && vote.VoteId == voteId);        
     }
 
-    async Task ProcessVote(int voteId, VoteTopic topic) {
-        await voteHub.SendAsync("ProcessVote", new Vote(moodboardId, topic.Id, voteId, sessionId));
-        VotedOnAllTopicsCheck();
-    }
+    Task ProcessVote(int voteId, VoteTopic topic) =>
+        voteHub.SendAsync("ProcessVote", new Vote(moodboardId, topic.Id, voteId, sessionId));
 
     Task GetVotesFromServer() =>
         voteHub.InvokeAsync("SendUpdateToAllClients", this.moodboardId);
