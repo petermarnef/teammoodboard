@@ -14,11 +14,19 @@
             <div class="topic">@topic.Name <span class="voteCount">@GetVoteCountForTopic(topic.Id)</span></div>
             @foreach (var option in client.Moodboard.Configuration.Options)
             {
-                <div 
-                    class="option @(AlreadyVoted(topic.Id, option.Id) ? "voted" : "")"
-                    @onclick="() => ProcessVote(topic.Id, option.Id)">
+                if (AlreadyVoted(topic.Id, option.Id))
+                {
+                    <div class="option voted">
                         @option.Emoji <span class="voteCount">@GetVoteCountForOption(topic.Id, option.Id)</span>
-                </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="option"
+                        @onclick="() => ProcessVote(topic.Id, option.Id)">
+                            @option.Emoji <span class="voteCount">@GetVoteCountForOption(topic.Id, option.Id)</span>
+                    </div>                    
+                }
             }
         }
     </div>
