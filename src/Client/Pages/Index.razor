@@ -1,164 +1,110 @@
 ﻿@page "/"
 @page "/{moodboardIdParameter}"
+@using Models
 @using MoodBoard.Shared;
-@using MoodBoard.Models;
 @using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager NavigationManager
 @implements IAsyncDisposable
 
-@if (showPage)
+@if (client.Initialised)
 {
     <div class="container">
-        @foreach (var topic in configuration)
+        @foreach (var topic in client.Moodboard.Configuration.Topics)
         {
-            <div class="topic">@topic.Name <span class="voteCount">@GetVoteCountForTopic(topic.Id)</span></div>
-            @foreach (var option in topic.VoteOptions)
+            <div class="topic">@topic.Name</div>
+            @foreach (var option in client.Moodboard.Configuration.Options)
             {
-                <div>
-                    @if (votingClosed)
-                    {
-                        var voteCountForOption = GetVoteCountForOption(topic.Id, option.Id);
-                        <div class="icon @(voteCountForOption > 0 ? "winner" : "loser")">
-                            @option.Emoji <span class="voteCount">@voteCountForOption</span>
-                        </div>
-                    }
-                    else
-                    {
-                        <div class="icon @(AlreadyVotedCheck(option.Id, topic.Id) ? "voted" : "")"
-            @onclick="() => ProcessVote(option.Id, topic)">@option.Emoji <span class="voteCount placeholder">?</span>
-                        </div>
-                    }
-                </div>
+                var alreadyVoted = AlreadyVoted(client.SessionId, topic.Id, option.Id);
+                <div class="option @(alreadyVoted ? "voted" : "")"
+                    @onclick="() => ProcessVote(client.SessionId, topic.Id, option.Id)">
+                    @option.Emoji <span class="voteCount">@GetVoteCountForOption(topic.Id, option.Id)</span>
+                </div>                    
             }
         }
     </div>
-    @if (votedOnAllTopics && !votingClosed)
-    {
-        <div class="teamResultsButton">
-            <button @onclick="ShowResults">Click to see team results!</button>
-        </div>
-    }
 }
 
 @code {
     [Parameter]
     public string moodboardIdParameter { get; set; }
 
-    private List<Vote> votes = new List<Vote>();
-    private bool showPage = false;
-    private Guid moodboardId;
-    private List<VoteTopic> configuration;
-    private HubConnection voteHub;
-    private Guid sessionId = Guid.NewGuid();
-    private bool votedOnAllTopics = false;
-    private bool votingClosed = false;
+    private Client client = new()
+    {
+        SessionId = Guid.NewGuid(),
+        Initialised = false,
+        HubConnection = null,
+        Moodboard = null
+    };
 
     protected override async Task OnInitializedAsync()
     {
-        GenerateNewMoodboardIdIfNoValidIdFound();
-        InitializeVotingTopics();
-        await RegisterWithServer();
-        await GetVotesFromServer();
-        showPage = true;
+        client.HubConnection = await InitialiseHubConnection();
+        client.Moodboard = await InitialiseMoodboard();
+
+        NavigationManager.NavigateTo($"/{client.Moodboard.Id}");
+        client.Initialised = true;
     }
 
-    void InitializeVotingTopics()
+    async Task<HubConnection> InitialiseHubConnection()
     {
-        //Voting topics can be added without other changes
-        //For additional voting options changes are needed
-
-        this.configuration = new List<VoteTopic> {
-                new VoteTopic(1, "Team", new List<VoteOption> {
-                new VoteOption(1, "🙂"),
-                new VoteOption(2, "😐"),
-                new VoteOption(3, "😢")
-            }),
-                new VoteTopic(2, "Process", new List<VoteOption> {
-                new VoteOption(1, "🙂"),
-                new VoteOption(2, "😐"),
-                new VoteOption(3, "😢")
-            }),
-                new VoteTopic(3, "End result", new List<VoteOption> {
-                new VoteOption(1, "🙂"),
-                new VoteOption(2, "😐"),
-                new VoteOption(3, "😢")
-            }),
-                new VoteTopic(4, "How I felt", new List<VoteOption> {
-                new VoteOption(1, "🙂"),
-                new VoteOption(2, "😐"),
-                new VoteOption(3, "😢")
-            })
-        };
+        var hubConnection = new HubConnectionBuilder()
+            .WithUrl(NavigationManager.ToAbsoluteUri("/moodboardHub"))
+            .WithAutomaticReconnect()
+            .Build();
+        hubConnection.On<Moodboard>("MoodboardUpdate", (moodboard) => ProcessUpdateFromHub(moodboard));
+        await hubConnection.StartAsync();
+        return hubConnection;
     }
 
-    void GenerateNewMoodboardIdIfNoValidIdFound()
+    async Task<Moodboard> InitialiseMoodboard()
     {
-        bool validGuidFound = Guid.TryParse(this.moodboardIdParameter, out this.moodboardId);
+        Guid moodboardId;
+        var validMoodboardIdFound = Guid.TryParse(moodboardIdParameter, out moodboardId);
 
-        if (!validGuidFound)
-        {
-            var newMoodboardId = Guid.NewGuid();
-            NavigationManager.NavigateTo($"/{newMoodboardId}");
-            this.moodboardId = newMoodboardId;
-        }
-    }
+        if (!validMoodboardIdFound)
+            moodboardId = Guid.NewGuid();
+            
+        return await client.HubConnection.InvokeAsync<Moodboard>("RegisterNewClient", moodboardId);
+    }    
 
-    async Task RegisterWithServer()
+    void ProcessUpdateFromHub(Moodboard moodboard)
     {
-        voteHub = new HubConnectionBuilder()
-        .WithUrl(NavigationManager.ToAbsoluteUri("/votehub"))
-        .Build();
-        voteHub.On<List<Vote>>("ReceiveVotes", (votes) => ProcessReceivedVotes(votes));
-        await voteHub.StartAsync();
-        await voteHub.InvokeAsync("AddClientToMoodboard", this.moodboardId);
-    }
-
-    void ShowResults()
-    {
-        votingClosed = true;
-    }
-
-    void VotedOnAllTopicsCheck()
-    {
-        if (votes
-        .Count(vote => vote.sessionId == sessionId)
-        .Equals(configuration.Count()))
-        {
-            votedOnAllTopics = true;
-        }
-    }
-
-    void ProcessReceivedVotes(List<Vote> votes)
-    {
-        this.votes = votes;
-        VotedOnAllTopicsCheck();
+        client.Moodboard = moodboard;
         StateHasChanged();
-    }
-
-    int GetVoteCountForTopic(int topicId)
-    {
-        return votes.Count(vote => vote.topicId == topicId);
     }
 
     int GetVoteCountForOption(int topicId, int optionId)
     {
-        return votes.Count(vote => vote.topicId == topicId && vote.VoteId == optionId);
-    }
+        return client.Moodboard.Votes.Count(vote => 
+            vote.TopicId == topicId && vote.OptionId == optionId);
+    }    
 
-    bool AlreadyVotedCheck(int voteId, int topicId)
+    bool AlreadyVoted(Guid sessionId, int topicId, int optionId)
     {
-        return votes.Any(vote =>
-        vote.sessionId == sessionId
-        && vote.topicId == topicId
-        && vote.VoteId == voteId);
+        return client.Moodboard.Votes.Any(vote =>
+            vote.ClientSessionId == sessionId
+            && vote.TopicId == topicId
+            && vote.OptionId == optionId);
     }
 
-    Task ProcessVote(int voteId, VoteTopic topic) =>
-    voteHub.SendAsync("ProcessVote", new Vote(moodboardId, topic.Id, voteId, sessionId));
+    async Task ProcessVote(Guid sessionId, int topicId, int optionId)
+    {
+        var newVote = new Vote(sessionId, topicId, optionId);
 
-    Task GetVotesFromServer() =>
-    voteHub.InvokeAsync("SendUpdateToAllClients", this.moodboardId);
+        var existingVoteForSameTopic = client.Moodboard.Votes.Where(vote => 
+            vote.ClientSessionId == sessionId
+            && vote.TopicId == topicId).SingleOrDefault();
+
+        if (existingVoteForSameTopic == newVote)
+            return;
+
+        if (existingVoteForSameTopic != null)
+            client.Moodboard.Votes.Remove(existingVoteForSameTopic);
+
+        client.Moodboard.Votes.Add(newVote);
+        await client.HubConnection.SendAsync("ProcessUpdatedMoodboard", client.Moodboard);
+    }
 
     public ValueTask DisposeAsync() =>
-    voteHub.DisposeAsync();
+        client.HubConnection.DisposeAsync();
 }
