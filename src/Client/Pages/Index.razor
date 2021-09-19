@@ -11,7 +11,7 @@
     <div class="container">
         @foreach (var topic in client.Moodboard.Configuration.Topics)
         {
-            <div class="topic">@topic.Name <span class="voteCount">@GetVoteCountForTopic(topic.Id)</span></div>
+            <div class="topic">@topic.Name</div>
             @foreach (var option in client.Moodboard.Configuration.Options)
             {
                 if (AlreadyVoted(topic.Id, option.Id))
@@ -79,11 +79,6 @@
     {
         client.Moodboard = moodboard;
         StateHasChanged();
-    }
-
-    int GetVoteCountForTopic(int topicId)
-    {
-        return client.Moodboard.Votes.Count(vote => vote.TopicId == topicId);
     }
 
     int GetVoteCountForOption(int topicId, int optionId)
