@@ -59,11 +59,3 @@ az webapp config ssl create \
 # In the Azure portal on the app service:
 # 1. Added SSL binding manually for the root and www custom domains - under `Custom domains`
 # 2. Enabled the HTTPS Only option (on the same page as step 1)
-
-
-Cosmos DB Free tier enabled on virtual network (db is only available internally)
-https://docs.microsoft.com/en-us/azure/cosmos-db/scripts/cli/sql/create?toc=/cli/azure/toc.json
-
-https://docs.microsoft.com/en-us/learn/modules/intro-to-azure-cosmos-db-core-api/
-
-https://docs.microsoft.com/en-us/azure/cosmos-db/how-to-configure-vnet-service-endpoint
