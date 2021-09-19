@@ -9,14 +9,14 @@ namespace MoodBoard.Server.State
         private const int NotFoundIndexValue = -1;
         private List<Moodboard> moodboards = new List<Moodboard>();
 
-        public void SaveMoodboard(Moodboard moodboard) {
+        public void SaveMoodboard(Moodboard newMoodboard) {
             var moodboardIndex = moodboards
-                .FindIndex(moodboard => moodboard.Id == moodboard.Id);
+                .FindIndex(moodboard => moodboard.Id == newMoodboard.Id);
 
             if (moodboardIndex == NotFoundIndexValue)
-                moodboards.Add(moodboard);
+                moodboards.Add(newMoodboard);
             else
-                moodboards[moodboardIndex] = moodboard;
+                moodboards[moodboardIndex] = newMoodboard;
         }
 
         public Moodboard GetMoodboard(Guid moodboardId)
