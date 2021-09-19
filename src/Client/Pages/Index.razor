@@ -102,6 +102,13 @@
 
     async Task ProcessVote(int topicId, int optionId)
     {
+        var existingVoteForSameTopic = client.Moodboard.Votes.Where(vote => 
+            vote.ClientSessionId == client.SessionId 
+            && vote.TopicId == topicId).SingleOrDefault();
+
+        if (existingVoteForSameTopic != null)
+            client.Moodboard.Votes.Remove(existingVoteForSameTopic);
+
         client.Moodboard.Votes.Add(new Vote(client.SessionId, topicId, optionId));
         await client.HubConnection.SendAsync("ProcessUpdatedMoodboard", client.Moodboard);
     }
