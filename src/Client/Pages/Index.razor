@@ -14,19 +14,11 @@
             <div class="topic">@topic.Name</div>
             @foreach (var option in client.Moodboard.Configuration.Options)
             {
-                if (AlreadyVoted(topic.Id, option.Id))
-                {
-                    <div class="option voted">
-                        @option.Emoji <span class="voteCount">@GetVoteCountForOption(topic.Id, option.Id)</span>
-                    </div>
-                }
-                else
-                {
-                    <div class="option"
-                        @onclick="() => ProcessVote(topic.Id, option.Id)">
-                            @option.Emoji <span class="voteCount">@GetVoteCountForOption(topic.Id, option.Id)</span>
-                    </div>                    
-                }
+                var alreadyVoted = AlreadyVoted(client.SessionId, topic.Id, option.Id);
+                <div class="option @(alreadyVoted ? "voted" : "")"
+                    @onclick="() => ProcessVote(client.SessionId, topic.Id, option.Id)">
+                    @option.Emoji <span class="voteCount">@GetVoteCountForOption(topic.Id, option.Id)</span>
+                </div>                    
             }
         }
     </div>
@@ -87,24 +79,29 @@
             vote.TopicId == topicId && vote.OptionId == optionId);
     }    
 
-    bool AlreadyVoted(int topicId, int optionId)
+    bool AlreadyVoted(Guid sessionId, int topicId, int optionId)
     {
         return client.Moodboard.Votes.Any(vote =>
-            vote.ClientSessionId == client.SessionId
+            vote.ClientSessionId == sessionId
             && vote.TopicId == topicId
             && vote.OptionId == optionId);
     }
 
-    async Task ProcessVote(int topicId, int optionId)
+    async Task ProcessVote(Guid sessionId, int topicId, int optionId)
     {
+        var newVote = new Vote(sessionId, topicId, optionId);
+
         var existingVoteForSameTopic = client.Moodboard.Votes.Where(vote => 
-            vote.ClientSessionId == client.SessionId 
+            vote.ClientSessionId == sessionId
             && vote.TopicId == topicId).SingleOrDefault();
+
+        if (existingVoteForSameTopic == newVote)
+            return;
 
         if (existingVoteForSameTopic != null)
             client.Moodboard.Votes.Remove(existingVoteForSameTopic);
 
-        client.Moodboard.Votes.Add(new Vote(client.SessionId, topicId, optionId));
+        client.Moodboard.Votes.Add(newVote);
         await client.HubConnection.SendAsync("ProcessUpdatedMoodboard", client.Moodboard);
     }
 
