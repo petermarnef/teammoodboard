@@ -4,6 +4,7 @@
 @using MoodBoard.Shared;
 @using Microsoft.AspNetCore.SignalR.Client
 @inject NavigationManager NavigationManager
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 @implements IAsyncDisposable
 
 @if (client.Initialised)
@@ -30,19 +31,30 @@
 
     private Client client = new()
     {
-        SessionId = Guid.NewGuid(),
-        Initialised = false,
         HubConnection = null,
-        Moodboard = null
+        Moodboard = null,
+        SessionId = Guid.Empty,
+        Initialised = false
     };
 
     protected override async Task OnInitializedAsync()
     {
         client.HubConnection = await InitialiseHubConnection();
         client.Moodboard = await InitialiseMoodboard();
+        client.SessionId = await InitialiseSessionId(client.Moodboard.Id);
 
         NavigationManager.NavigateTo($"/{client.Moodboard.Id}");
+        await SaveSessionInLocalStorage(client.Moodboard.Id, client.SessionId);
         client.Initialised = true;
+    }
+
+    async Task<Guid> InitialiseSessionId(Guid moodboardId)
+    {
+        var existingSessionId = await LocalStorage.GetItemAsync<Guid>(moodboardId.ToString());
+        if (existingSessionId != Guid.Empty)
+            return existingSessionId;
+        else
+            return Guid.NewGuid();
     }
 
     async Task<HubConnection> InitialiseHubConnection()
@@ -65,6 +77,11 @@
             moodboardId = Guid.NewGuid();
             
         return await client.HubConnection.InvokeAsync<Moodboard>("RegisterNewClient", moodboardId);
+    }
+
+    async Task SaveSessionInLocalStorage(Guid moodboardId, Guid sessionId)
+    {
+        await LocalStorage.SetItemAsync<Guid>(moodboardId.ToString(), sessionId);
     }    
 
     void ProcessUpdateFromHub(Moodboard moodboard)
