@@ -30,49 +30,22 @@
     color: gray;
 }    
 
-.icon {
+.option {
     cursor: pointer;
     font-size: 4em;
     opacity: .5;
     padding: 10px;
 }
 
-.icon.voted {
+.option.voted {
     opacity: 1;
     text-shadow: 2px 2px lightgray;
     animation: flip-scale-down 0.4s linear both;
 } 
 
-.icon.winner {
-    cursor: default;
-    text-shadow: 2px 2px lightgray;
-    opacity: 1;
-}  
-
-.icon.loser {
-    cursor: default;
-    color: transparent;
-    text-shadow: 0 0 0 gray;
-}      
-
-.icon .voteCount {
+.option .voteCount {
     margin-left: 5px;
     font-family: FjallaOne, Arial, Helvetica, sans-serif;
     font-size: 0.8em;
     text-shadow: none;
-}   
-
-.icon .voteCount.placeholder {
-    visibility: hidden;
-}
-
-.teamResultsButton {
-    text-align: center;
-    margin-top: 30px;
-}
-
-.teamResultsButton button {
-    font-size: 1.2em;
-    font-weight: bold;
-    padding: 10px;
 }

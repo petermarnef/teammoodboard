@@ -21,7 +21,7 @@ namespace MoodBoard.Server
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<VoteState>();
+            services.AddSingleton<ApplicationState>();
             services.AddSignalR();
             services.AddRazorPages();
             services.AddResponseCompression(opts =>
@@ -55,7 +55,7 @@ namespace MoodBoard.Server
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapRazorPages();
-                endpoints.MapHub<VoteHub>("/votehub");
+                endpoints.MapHub<MoodboardHub>("/moodboardHub");
                 endpoints.MapFallbackToFile("index.html");
             });
         }
