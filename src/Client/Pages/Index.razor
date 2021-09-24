@@ -26,102 +26,103 @@
 }
 
 @code {
-    [Parameter]
-    public string moodboardIdParameter { get; set; }
 
-    private Client client = new()
-    {
-        HubConnection = null,
-        Moodboard = null,
-        SessionId = Guid.Empty,
-        Initialised = false
-    };
+[Parameter]
+public string moodboardIdParameter { get; set; }
 
-    protected override async Task OnInitializedAsync()
-    {
-        client.HubConnection = await InitialiseHubConnection();
-        client.Moodboard = await InitialiseMoodboard();
-        client.SessionId = await InitialiseSessionId(client.Moodboard.Id);
+private Client client = new()
+{
+    HubConnection = null,
+    Moodboard = null,
+    SessionId = Guid.Empty,
+    Initialised = false
+};
 
-        NavigationManager.NavigateTo($"/{client.Moodboard.Id}");
-        await SaveSessionInLocalStorage(client.Moodboard.Id, client.SessionId);
-        client.Initialised = true;
-    }
+protected override async Task OnInitializedAsync()
+{
+    client.HubConnection = await InitialiseHubConnection();
+    client.Moodboard = await InitialiseMoodboard();
+    client.SessionId = await InitialiseSessionId(client.Moodboard.Id);
 
-    async Task<Guid> InitialiseSessionId(Guid moodboardId)
-    {
-        var existingSessionId = await LocalStorage.GetItemAsync<Guid>(moodboardId.ToString());
-        if (existingSessionId != Guid.Empty)
-            return existingSessionId;
-        else
-            return Guid.NewGuid();
-    }
+    NavigationManager.NavigateTo($"/{client.Moodboard.Id}");
+    await SaveSessionInLocalStorage(client.Moodboard.Id, client.SessionId);
+    client.Initialised = true;
+}
 
-    async Task<HubConnection> InitialiseHubConnection()
-    {
-        var hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri("/moodboardHub"))
-            .WithAutomaticReconnect()
-            .Build();
-        hubConnection.On<Moodboard>("MoodboardUpdate", (moodboard) => ProcessUpdateFromHub(moodboard));
-        await hubConnection.StartAsync();
-        return hubConnection;
-    }
+async Task<Guid> InitialiseSessionId(Guid moodboardId)
+{
+    var existingSessionId = await LocalStorage.GetItemAsync<Guid>(moodboardId.ToString());
+    if (existingSessionId != Guid.Empty)
+        return existingSessionId;
+    else
+        return Guid.NewGuid();
+}
 
-    async Task<Moodboard> InitialiseMoodboard()
-    {
-        Guid moodboardId;
-        var validMoodboardIdFound = Guid.TryParse(moodboardIdParameter, out moodboardId);
+async Task<HubConnection> InitialiseHubConnection()
+{
+    var hubConnection = new HubConnectionBuilder()
+        .WithUrl(NavigationManager.ToAbsoluteUri("/moodboardHub"))
+        .WithAutomaticReconnect()
+        .Build();
+    hubConnection.On<Moodboard>("MoodboardUpdate", (moodboard) => ProcessUpdateFromHub(moodboard));
+    await hubConnection.StartAsync();
+    return hubConnection;
+}
 
-        if (!validMoodboardIdFound)
-            moodboardId = Guid.NewGuid();
+async Task<Moodboard> InitialiseMoodboard()
+{
+    var validMoodboardIdFound = Guid.TryParse(moodboardIdParameter, out var moodboardId);
+
+    if (!validMoodboardIdFound)
+        moodboardId = Guid.NewGuid();
             
-        return await client.HubConnection.InvokeAsync<Moodboard>("RegisterNewClient", moodboardId);
-    }
+    return await client.HubConnection.InvokeAsync<Moodboard>("RegisterNewClient", moodboardId);
+}
 
-    async Task SaveSessionInLocalStorage(Guid moodboardId, Guid sessionId)
-    {
-        await LocalStorage.SetItemAsync<Guid>(moodboardId.ToString(), sessionId);
-    }    
+async Task SaveSessionInLocalStorage(Guid moodboardId, Guid sessionId)
+{
+    await LocalStorage.SetItemAsync<Guid>(moodboardId.ToString(), sessionId);
+}    
 
-    void ProcessUpdateFromHub(Moodboard moodboard)
-    {
-        client.Moodboard = moodboard;
-        StateHasChanged();
-    }
+void ProcessUpdateFromHub(Moodboard moodboard)
+{
+    client.Moodboard = moodboard;
+    StateHasChanged();
+}
 
-    int GetVoteCountForOption(int topicId, int optionId)
-    {
-        return client.Moodboard.Votes.Count(vote => 
-            vote.TopicId == topicId && vote.OptionId == optionId);
-    }    
+int GetVoteCountForOption(int topicId, int optionId)
+{
+    return client.Moodboard.Votes.Count(vote => 
+        vote.TopicId == topicId && vote.OptionId == optionId);
+}    
 
-    bool AlreadyVoted(Guid sessionId, int topicId, int optionId)
-    {
-        return client.Moodboard.Votes.Any(vote =>
-            vote.ClientSessionId == sessionId
-            && vote.TopicId == topicId
-            && vote.OptionId == optionId);
-    }
+bool AlreadyVoted(Guid sessionId, int topicId, int optionId)
+{
+    return client.Moodboard.Votes.Any(vote =>
+        vote.ClientSessionId == sessionId
+        && vote.TopicId == topicId
+        && vote.OptionId == optionId);
+}
 
-    async Task ProcessVote(Guid sessionId, int topicId, int optionId)
-    {
-        var newVote = new Vote(sessionId, topicId, optionId);
+async Task ProcessVote(Guid sessionId, int topicId, int optionId)
+{
+    var newVote = new Vote(sessionId, topicId, optionId);
 
-        var existingVoteForSameTopic = client.Moodboard.Votes.Where(vote => 
-            vote.ClientSessionId == sessionId
-            && vote.TopicId == topicId).SingleOrDefault();
+    var existingVoteForSameTopic = client.Moodboard.Votes.Where(vote => 
+        vote.ClientSessionId == sessionId
+        && vote.TopicId == topicId).SingleOrDefault();
 
-        if (existingVoteForSameTopic == newVote)
-            return;
+    if (existingVoteForSameTopic == newVote)
+        return;
 
-        if (existingVoteForSameTopic != null)
-            client.Moodboard.Votes.Remove(existingVoteForSameTopic);
+    if (existingVoteForSameTopic != null)
+        client.Moodboard.Votes.Remove(existingVoteForSameTopic);
 
-        client.Moodboard.Votes.Add(newVote);
-        await client.HubConnection.SendAsync("ProcessUpdatedMoodboard", client.Moodboard);
-    }
+    client.Moodboard.Votes.Add(newVote);
+    await client.HubConnection.SendAsync("ProcessUpdatedMoodboard", client.Moodboard);
+}
 
-    public ValueTask DisposeAsync() =>
-        client.HubConnection.DisposeAsync();
+public ValueTask DisposeAsync() =>
+    client.HubConnection.DisposeAsync();
+
 }
