@@ -142,6 +142,12 @@ async Task SaveSessionInLocalStorage(Guid moodboardId, Guid sessionId)
 void ProcessUpdateFromHub(Moodboard moodboard)
 {
     client.Moodboard = moodboard;
+
+    foreach (var topic in client.Moodboard.Configuration.Topics)
+    {
+        showVoteCountForTopic[topic.Id] = HasSelectedEmoji(topic.Id);
+    }
+
     StateHasChanged();
 }
 
