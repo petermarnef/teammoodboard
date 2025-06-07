@@ -1,4 +1,3 @@
-/* Force clear any existing problematic styles */
 .emoji-picker {
     display: flex !important;
     flex-direction: column !important;
