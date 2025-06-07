@@ -2,16 +2,20 @@
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 2rem;
+    padding: 1rem;
+    border: 1px solid #ddd; /* Very minimal border */
+    border-radius: 6px;
+    background: none; /* Explicitly remove background */
+    box-shadow: none; /* Remove shadow */
 }
 
 .grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(5, 1fr);
-    gap: 1rem;
-    width: 400px;
-    height: 500px;
+    gap: 0.5rem;
+    width: 300px; /* Smaller width */
+    height: 400px; /* Smaller height */
     justify-items: center;
     align-items: center;
 }
@@ -26,11 +30,11 @@
 
 .topic {
     font-family: 'Lobster', Impact, sans-serif;
-    font-size: 4rem;
+    font-size: 2.8rem; /* Adjusted font size for component title */
     color: #000;
-    filter: drop-shadow(0 0 0.4rem grey);
+    filter: drop-shadow(0 0 0.3rem grey);
     text-align: center;
-    padding: 0 0.6em;
+    padding: 0 0.3em;
     cursor: pointer;
 }
 
@@ -59,10 +63,10 @@
 }
 
 .emojiIcon {
-    font-size: 4em;
-    border: 2px solid transparent;
-    height: 1.25em;
-    width: 1.25em;
+    font-size: 2.8em; /* Adjusted emoji size */
+    border: 1px solid transparent; /* Minimal border */
+    height: 1.4em;
+    width: 1.4em;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -70,23 +74,46 @@
 }
 
 .emojiText {
-    font-size: 0.8em;
+    font-size: 0.85em; /* Original text size */
+    font-weight: bold;
     color: #666;
     font-family: 'Roboto', sans-serif;
-    margin-top: 0.25rem;
+    margin-top: 0.02rem; /* Maintain reduced whitespace */
 }
 
 .emojiNumber {
-    font-size: 0.8em;
+    font-size: 0.85em; /* Original text size */
     font-weight: bold;
     color: #333;
     font-family: 'Roboto', sans-serif;
-    margin-top: 0.25rem;
+    margin-top: 0.02rem; /* Maintain reduced whitespace */
 }
 
 .emojiText.hide,
 .emojiNumber.hide {
     display: none;
+}
+
+/* Fix two-column layout */
+.topics-container {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr); /* Two columns */
+    gap: 1rem;
+    padding: 1rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.topics-container .emoji-picker {
+    min-width: 250px;
+    border: 1px solid #ccc; /* Minimal border */
+}
+
+/* Responsive design for smaller screens */
+@media (max-width: 768px) {
+    .topics-container .emoji-picker {
+        flex: 1 1 100%;
+    }
 }
 
 @keyframes flip-scale-down {
@@ -101,4 +128,4 @@
     100% {
         transform: scale(1) rotate3d(-1, 1, 0, 0deg);
     }
-} 
+}
