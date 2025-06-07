@@ -9,20 +9,45 @@
 
 @if (client.Initialised)
 {
-    <div class="container">
+    <div class="topics-container">
         @foreach (var topic in client.Moodboard.Configuration.Topics)
         {
-            <div class="topic">@topic.Name</div>
-            @foreach (var option in client.Moodboard.Configuration.Options)
-            {
-                var alreadyVoted = AlreadyVoted(client.SessionId, topic.Id, option.Id);
-                <div class="option @(alreadyVoted ? "voted" : "")"
-                    @onclick="() => ProcessVote(client.SessionId, topic.Id, option.Id)">
-                    @option.Emoji <span class="voteCount">@GetVoteCountForOption(topic.Id, option.Id)</span>
-                </div>                    
-            }
+            <div class="emoji-picker" style="display: flex; flex-direction: column; padding: 1rem; margin-bottom: 1rem; border: 1px solid #e0e0e0; border-radius: 16px; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                <div class="topic-content" style="display: flex; align-items: flex-start; gap: 1rem; width: 100%;">
+                    <!-- Topic text on the left -->
+                    <div class="topic-left" style="flex: 0 0 auto; min-width: 200px;">
+                        <div class="topic" style="font-family: 'Poppins', sans-serif; font-size: 2.2rem; font-weight: 600; color: #2c3e50; cursor: pointer; padding: 0.5rem; border-radius: 8px; background-color: transparent;"
+                             @onclick="() => ShowAllEmojis(topic.Id)">@topic.Name</div>
+                    </div>
+
+                    <!-- Emojis on the right -->
+                    <div class="emoji-container" style="display: flex; flex-wrap: wrap; gap: 1rem; flex: 1; align-items: flex-start;">
+                        @foreach (var option in client.Moodboard.Configuration.Options)
+                        {
+                            var isSelected = AlreadyVoted(client.SessionId, topic.Id, option.Id);
+                            var voteCount = GetVoteCountForOption(topic.Id, option.Id);
+                            var showVoteCount = showVoteCountForTopic.ContainsKey(topic.Id) && showVoteCountForTopic[topic.Id];
+
+                            <div class="emoji-item" style="display: flex; flex-direction: column; align-items: center; cursor: pointer;" @onclick="() => Vote(topic.Id, option.Id)">
+                                <div class="emojiIcon @(isSelected ? "selected" : "")" style="font-size: 2.5rem; width: 4rem; height: 4rem; display: flex; align-items: center; justify-content: center; border-radius: 50%; background-color: #f8f9fa; border: 2px solid @(isSelected ? "#64b5f6" : "transparent"); font-weight: @(isSelected ? "bold" : "normal"); margin-bottom: 0.5rem;">
+                                    <span>@option.Emoji</span>
+                                </div>
+                                <div class="emojiText" style="font-size: 0.85rem; font-weight: 500; color: #495057; font-family: 'Roboto', sans-serif; text-align: center; margin-bottom: 0.2rem;">@option.Text</div>
+                                @if (showVoteCount)
+                                {
+                                    <div class="emojiNumber @(voteCount == 0 ? "hide" : "")" style="font-size: 0.8rem; font-weight: bold; color: #2196f3; background-color: #e3f2fd; padding: 0.2rem 0.5rem; border-radius: 12px; text-align: center;">@voteCount</div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
         }
     </div>
+}
+else
+{
+    <div>Loading...</div>
 }
 
 @code {
@@ -38,11 +63,21 @@ private Client client = new()
     Initialised = false
 };
 
+private Dictionary<int, bool> showAllEmojisForTopic = new();
+private Dictionary<int, bool> showVoteCountForTopic = new();
+
 protected override async Task OnInitializedAsync()
 {
     client.HubConnection = await InitialiseHubConnection();
     client.Moodboard = await InitialiseMoodboard();
     client.SessionId = await InitialiseSessionId(client.Moodboard.Id);
+
+    // Initialize state for all topics
+    foreach (var topic in client.Moodboard.Configuration.Topics)
+    {
+        showAllEmojisForTopic[topic.Id] = true; // Start with emojis visible
+        showVoteCountForTopic[topic.Id] = false; // Start with text visible
+    }
 
     NavigationManager.NavigateTo($"/{client.Moodboard.Id}");
     await SaveSessionInLocalStorage(client.Moodboard.Id, client.SessionId);
@@ -119,7 +154,35 @@ async Task ProcessVote(Guid sessionId, int topicId, int optionId)
         client.Moodboard.Votes.Remove(existingVoteForSameTopic);
 
     client.Moodboard.Votes.Add(newVote);
+    
+    // Show vote counts for this topic when user clicks an emoji
+    showVoteCountForTopic[topicId] = true;
+    
     await client.HubConnection.SendAsync("ProcessUpdatedMoodboard", client.Moodboard);
+}
+
+void ShowAllEmojis(int topicId)
+{
+    showAllEmojisForTopic[topicId] = true;
+    StateHasChanged();
+}
+
+void ShowResults(int topicId)
+{
+    showAllEmojisForTopic[topicId] = false;
+    // Keep showing vote counts once user has voted for this topic
+    StateHasChanged();
+}
+
+bool HasSelectedEmoji(int topicId)
+{
+    return client.Moodboard.Votes.Any(vote => 
+        vote.ClientSessionId == client.SessionId && vote.TopicId == topicId);
+}
+
+async Task Vote(int topicId, int optionId)
+{
+    await ProcessVote(client.SessionId, topicId, optionId);
 }
 
 public ValueTask DisposeAsync() =>
