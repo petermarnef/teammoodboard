@@ -17,7 +17,7 @@
                     <!-- Topic text on the left -->
                     <div class="topic-left" style="flex: 0 0 auto; min-width: 200px;">
                         <div class="topic @(animateTopicForTopic.ContainsKey(topic.Id) && animateTopicForTopic[topic.Id] ? "animate" : "")"
-                             style="font-family: 'Poppins', sans-serif; font-size: 1.8rem; font-weight: 600; color: #2c3e50; cursor: pointer; padding: 0.5rem; border-radius: 8px;"
+                             style="font-family: 'Poppins', sans-serif; font-size: 2.2rem; font-weight: 600; color: #2c3e50; cursor: pointer; padding: 0.5rem; border-radius: 8px; background-color: transparent;"
                              @onclick="() => ShowAllEmojis(topic.Id)">@topic.Name</div>
                     </div>
 
