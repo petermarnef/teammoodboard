@@ -1,19 +1,26 @@
 .emoji-picker {
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    padding: 1rem;
-    border: 1px solid #ddd; /* Very minimal border */
-    border-radius: 6px;
-    background: none; /* Explicitly remove background */
-    box-shadow: none; /* Remove shadow */
+    padding: 1.5rem; /* Reduced padding */
+    border: 1px solid #dcdcdc; /* Elegant border */
+    border-radius: 12px; /* Slightly smaller rounded corners */
+    background: linear-gradient(135deg, #f9f9f9, #ffffff); /* Subtle gradient */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Softer shadow */
+    transition: transform 0.3s ease, box-shadow 0.3s ease; /* Smooth hover effect */
+}
+
+.emoji-picker:hover {
+    transform: translateY(-5px); /* Lift on hover */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); /* Enhanced shadow */
 }
 
 .grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
     grid-template-rows: repeat(5, 1fr);
-    gap: 0.5rem;
+    gap: 0.6rem; /* Reduced gap */
     width: 300px; /* Smaller width */
     height: 400px; /* Smaller height */
     justify-items: center;
@@ -29,64 +36,62 @@
 }
 
 .topic {
-    font-family: 'Lobster', Impact, sans-serif;
-    font-size: 2.8rem; /* Adjusted font size for component title */
-    color: #000;
-    filter: drop-shadow(0 0 0.3rem grey);
+    font-family: 'Poppins', sans-serif; /* Modern font */
+    font-size: 2.8rem; /* Reduced title size */
+    font-weight: 600; /* Semi-bold for emphasis */
+    color: #222; /* Darker color for better contrast */
     text-align: center;
-    padding: 0 0.3em;
-    cursor: pointer;
+    padding: 0.4em; /* Reduced padding */
+    margin-bottom: 1rem; /* Increased space below title */
 }
 
 .topic.animate {
     animation: flip-scale-down 0.6s linear both;
 }
 
-.emoji-option {
-    cursor: pointer;
+/* Adjusted layout for emojis and text */
+.emoji-container {
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    width: 100%;
-    height: 100%;
-    justify-content: center;
+    flex-direction: row; /* Horizontal layout */
+    justify-content: center; /* Center alignment */
+    gap: 0.8rem; /* Reduced gap */
+    margin-top: 1rem; /* Space between topic and emojis */
 }
 
-.emoji-option.hide {
-    visibility: hidden;
-}
-
-.emoji-option.selected .emojiIcon {
-    border: 2px solid #000;
-    border-radius: 25%;
-}
-
+/* Rollback to previous emoji styling */
 .emojiIcon {
-    font-size: 2.8em; /* Adjusted emoji size */
-    border: 1px solid transparent; /* Minimal border */
-    height: 1.4em;
-    width: 1.4em;
+    font-size: 2.8em; /* Maintain size */
+    border: 2px solid transparent; /* Minimal border */
+    height: 1.4em; /* Smaller height */
+    width: 1.4em; /* Smaller width */
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 25%;
+    border-radius: 50%; /* Circular shape */
+    background-color: #f0f0f0; /* Subtle background */
+}
+
+.emojiIcon:hover {
+    transform: scale(1.1); /* Slight zoom on hover */
+    box-shadow: 0 6px 10px rgba(0, 0, 0, 0.15); /* Enhanced shadow on hover */
 }
 
 .emojiText {
-    font-size: 0.85em; /* Original text size */
-    font-weight: bold;
-    color: #666;
+    font-size: 0.9em; /* Maintain text size */
+    font-weight: 500; /* Medium weight for readability */
+    color: #555; /* Softer color */
     font-family: 'Roboto', sans-serif;
-    margin-top: 0.02rem; /* Maintain reduced whitespace */
+    margin-top: 0.1rem; /* Adjusted whitespace */
+    text-align: center; /* Center alignment */
 }
 
 .emojiNumber {
-    font-size: 0.85em; /* Original text size */
+    font-size: 0.9em; /* Slightly smaller text size */
     font-weight: bold;
-    color: #333;
+    color: #333; /* Darker color */
     font-family: 'Roboto', sans-serif;
-    margin-top: 0.02rem; /* Maintain reduced whitespace */
+    margin-top: 0.1rem; /* Adjusted whitespace */
+    text-align: center; /* Center alignment */
 }
 
 .emojiText.hide,
@@ -94,25 +99,29 @@
     display: none;
 }
 
-/* Fix two-column layout */
+/* Two-column layout */
 .topics-container {
     display: grid;
     grid-template-columns: repeat(2, 1fr); /* Two columns */
-    gap: 1rem;
-    padding: 1rem;
+    gap: 1.5rem; /* Reduced gap */
+    padding: 1.5rem; /* Reduced padding */
     width: 100%;
     box-sizing: border-box;
 }
 
 .topics-container .emoji-picker {
-    min-width: 250px;
-    border: 1px solid #ccc; /* Minimal border */
+    min-width: 260px; /* Reduced minimum width */
 }
 
 /* Responsive design for smaller screens */
 @media (max-width: 768px) {
+    .topics-container {
+        grid-template-columns: 1fr; /* Single column for smaller screens */
+        gap: 1rem; /* Reduced gap for smaller screens */
+    }
+
     .topics-container .emoji-picker {
-        flex: 1 1 100%;
+        width: 100%;
     }
 }
 

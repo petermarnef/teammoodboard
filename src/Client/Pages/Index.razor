@@ -12,56 +12,20 @@
     @foreach (var topic in client.Moodboard.Configuration.Topics)
     {
         <div class="emoji-picker" style="margin-bottom: 3rem;">
-            <div class="grid" 
-                 @onmouseenter="() => ShowAllEmojis(topic.Id)" 
-                 @onmouseleave="() => ShowResults(topic.Id)">
-                @{
-                    var emojiIndex = 0;
-                    var gridElementPositions = new[] { 2, 4, 6, 10, 12, 14 };
-                    var showAllEmojis = showAllEmojisForTopic.ContainsKey(topic.Id) && showAllEmojisForTopic[topic.Id];
-                    var hasVoted = HasSelectedEmoji(topic.Id);
-                }
-                @for (int i = 1; i <= 15; i++)
+            <div class="topic @(animateTopicForTopic.ContainsKey(topic.Id) && animateTopicForTopic[topic.Id] ? "animate" : "")"
+                 @onclick="() => ShowAllEmojis(topic.Id)">@topic.Name</div>
+
+            <!-- Horizontal layout for emojis -->
+            <div class="emoji-container">
+                @foreach (var option in client.Moodboard.Configuration.Options)
                 {
-                    <div class="grid-element">
-                        @if (i == 8)
-                        {
-                            <!-- Topic in center -->
-                            <div class="topic @(animateTopicForTopic.ContainsKey(topic.Id) && animateTopicForTopic[topic.Id] ? "animate" : "")"
-                                 @onclick="() => ShowAllEmojis(topic.Id)">@topic.Name</div>
-                        }
-                        else if (gridElementPositions.Contains(i) && emojiIndex < client.Moodboard.Configuration.Options.Count)
-                        {
-                            <!-- Emoji option -->
-                            var option = client.Moodboard.Configuration.Options[emojiIndex];
-                            var isSelected = AlreadyVoted(client.SessionId, topic.Id, option.Id);
-                            var voteCount = GetVoteCountForOption(topic.Id, option.Id);
-                            var showVoteCount = showVoteCountForTopic.ContainsKey(topic.Id) && showVoteCountForTopic[topic.Id];
-                            
-                            // Show/hide logic based on state
-                            var hideEmoji = false;
-                            if (showAllEmojis)
-                            {
-                                hideEmoji = false; // Show all emojis when hovering
-                            }
-                            else if (hasVoted)
-                            {
-                                hideEmoji = voteCount == 0; // Show only emojis with votes when not hovering and has voted
-                            }
-                            else
-                            {
-                                hideEmoji = false; // Show all emojis when not hovering and no vote (changed from true)
-                            }
-                            
-                            <div class="emoji-option @(isSelected ? "selected" : "") @(hideEmoji ? "hide" : "")"
-                                 @onclick="() => ProcessVote(client.SessionId, topic.Id, option.Id)">
-                                <div class="emojiIcon">@option.Emoji</div>
-                                <div class="emojiText @(showVoteCount ? "hide" : "")">@option.Text</div>
-                                <div class="emojiNumber @(showVoteCount ? "" : "hide")">@voteCount</div>
-                            </div>
-                            
-                            emojiIndex++;
-                        }
+                    var isSelected = AlreadyVoted(client.SessionId, topic.Id, option.Id);
+                    var voteCount = GetVoteCountForOption(topic.Id, option.Id);
+                    var showVoteCount = showVoteCountForTopic.ContainsKey(topic.Id) && showVoteCountForTopic[topic.Id];
+
+                    <div class="emojiIcon">
+                        <span>@option.Emoji</span>
+                        <div class="emojiText">@option.Description</div>
                     </div>
                 }
             </div>
