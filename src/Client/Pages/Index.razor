@@ -29,7 +29,7 @@
                             var showVoteCount = showVoteCountForTopic.ContainsKey(topic.Id) && showVoteCountForTopic[topic.Id];
 
                             <div class="emoji-item" style="display: flex; flex-direction: column; align-items: center; cursor: pointer;" @onclick="() => Vote(topic.Id, option.Id)">
-                                <div class="emojiIcon @(isSelected ? "selected" : "")" style="font-size: 2.5rem; width: 4rem; height: 4rem; display: flex; align-items: center; justify-content: center; border-radius: 50%; background-color: #f8f9fa; border: 2px solid transparent; margin-bottom: 0.5rem;">
+                                <div class="emojiIcon @(isSelected ? "selected" : "")" style="font-size: 2.5rem; width: 4rem; height: 4rem; display: flex; align-items: center; justify-content: center; border-radius: 50%; background-color: #f8f9fa; border: 2px solid @(isSelected ? "#64b5f6" : "transparent"); font-weight: @(isSelected ? "bold" : "normal"); margin-bottom: 0.5rem;">
                                     <span>@option.Emoji</span>
                                 </div>
                                 <div class="emojiText" style="font-size: 0.85rem; font-weight: 500; color: #495057; font-family: 'Roboto', sans-serif; text-align: center; margin-bottom: 0.2rem;">@option.Text</div>
