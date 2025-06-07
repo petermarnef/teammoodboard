@@ -7,20 +7,31 @@
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 @implements IAsyncDisposable
 
-@if (client.Initialised)
-{
-    <div class="topics-container">
+<div class="page-header" style="text-align: center; margin-bottom: 0.67rem;">
+    <h1 style="font-family: 'Poppins', sans-serif; font-size: 3rem; font-weight: 700; color: #2c3e50;">Team Moodboard</h1>
+    <p style="font-family: 'Roboto', sans-serif; font-size: 1.2rem; color: #495057;">Find out how your team feels!</p>
+</div>
+
+<div class="topics-container" style="padding-top: 0.5rem;">
+    <div class="list-container" style="margin: 0 auto 2rem auto; width: calc(100% - 2rem); padding: 0.5rem 1rem; border-radius: 16px; background: #f8f8f8; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+        <ol style="list-style: decimal; padding-left: 1.5rem; font-family: 'Roboto', sans-serif; font-size: 0.9rem; color: #6c757d; text-align: left;">
+            <li style="margin-bottom: 0.5rem;">This page gives you a unique moodboard</li>
+            <li style="margin-bottom: 0.5rem;">Share the URL with your team</li>
+            <li style="margin-bottom: 0.5rem;">Start voting to reveal your team’s mood</li>
+            <li style="margin-bottom: 0.5rem;"><a href="http://teammoodboard.com/" style="color: #64b5f6; text-decoration: none;">Click here</a> for a new moodboard</li>
+        </ol>
+    </div>
+
+    @if (client.Initialised)
+    {
         @foreach (var topic in client.Moodboard.Configuration.Topics)
         {
-            <div class="emoji-picker" style="display: flex; flex-direction: column; padding: 1rem; margin-bottom: 1rem; border: 1px solid #e0e0e0; border-radius: 16px; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+            <div class="emoji-picker" style="display: flex; flex-direction: column; padding: 2.5em; margin-bottom: 1rem; border: 1px solid #e0e0e0; border-radius: 16px; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
                 <div class="topic-content" style="display: flex; align-items: flex-start; gap: 1rem; width: 100%;">
-                    <!-- Topic text on the left -->
                     <div class="topic-left" style="flex: 0 0 auto; min-width: 200px;">
                         <div class="topic" style="font-family: 'Poppins', sans-serif; font-size: 2.2rem; font-weight: 600; color: #2c3e50; cursor: pointer; padding: 0.5rem; border-radius: 8px; background-color: transparent;"
                              @onclick="() => ShowAllEmojis(topic.Id)">@topic.Name</div>
                     </div>
-
-                    <!-- Emojis on the right -->
                     <div class="emoji-container" style="display: flex; flex-wrap: wrap; gap: 1rem; flex: 1; align-items: flex-start;">
                         @foreach (var option in client.Moodboard.Configuration.Options)
                         {
@@ -43,12 +54,12 @@
                 </div>
             </div>
         }
-    </div>
-}
-else
-{
-    <div>Loading...</div>
-}
+    }
+    else
+    {
+        <div>Loading...</div>
+    }
+</div>
 
 @code {
 
