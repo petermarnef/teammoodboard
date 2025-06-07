@@ -2,10 +2,30 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch and Debug Standalone Blazor WebAssembly App",
+            "name": "Launch and Debug Blazor Server",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build",
+            "program": "${workspaceFolder}/src/Server/bin/Debug/net9.0/MoodBoard.Server.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}/src/Server",
+            "stopAtEntry": false,
+            "serverReadyAction": {
+                "action": "openExternally",
+                "pattern": "\\bNow listening on:\\s+(https?://\\S+)"
+            },
+            "env": {
+                "ASPNETCORE_ENVIRONMENT": "Development"
+            },
+            "sourceFileMap": {
+                "/Views": "${workspaceFolder}/src/Server/Views"
+            }
+        },
+        {
+            "name": "Launch and Debug Blazor WebAssembly",
             "type": "blazorwasm",
             "request": "launch",
-            "cwd": "${workspaceFolder}/Server",
+            "cwd": "${workspaceFolder}/src/Server",
             "url": "http://localhost:5000"
         }
     ]

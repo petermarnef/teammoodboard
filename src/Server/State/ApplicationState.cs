@@ -3,27 +3,26 @@ using System.Collections.Generic;
 using System.Linq;
 using MoodBoard.Shared;
 
-namespace MoodBoard.Server.State
-{
-    public class ApplicationState {
-        private const int NotFoundIndexValue = -1;
-        private List<Moodboard> moodboards = new List<Moodboard>();
+namespace MoodBoard.Server.State;
 
-        public void SaveMoodboard(Moodboard newMoodboard) {
-            var moodboardIndex = moodboards
-                .FindIndex(moodboard => moodboard.Id == newMoodboard.Id);
+public class ApplicationState {
+    private const int NotFoundIndexValue = -1;
+    private List<Moodboard> moodboards = new List<Moodboard>();
 
-            if (moodboardIndex == NotFoundIndexValue)
-                moodboards.Add(newMoodboard);
-            else
-                moodboards[moodboardIndex] = newMoodboard;
-        }
+    public void SaveMoodboard(Moodboard newMoodboard) {
+        var moodboardIndex = moodboards
+            .FindIndex(moodboard => moodboard.Id == newMoodboard.Id);
 
-        public Moodboard GetMoodboard(Guid moodboardId)
-        {
-            return moodboards
-                .Where(moodboard => moodboard.Id == moodboardId)
-                .SingleOrDefault();
-        }
+        if (moodboardIndex == NotFoundIndexValue)
+            moodboards.Add(newMoodboard);
+        else
+            moodboards[moodboardIndex] = newMoodboard;
+    }
+
+    public Moodboard GetMoodboard(Guid moodboardId)
+    {
+        return moodboards
+            .Where(moodboard => moodboard.Id == moodboardId)
+            .SingleOrDefault();
     }
 }

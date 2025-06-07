@@ -6,7 +6,7 @@ This app is build with [ASP.NET Core Blazor](https://docs.microsoft.com/en-us/as
 
 ## How to get started contributing code
 
-### Prequisites
+### Prerequisites
 
 - Have the .NET Core SDK installed (v5)
 

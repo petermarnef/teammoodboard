@@ -1,45 +1,175 @@
+/* Force clear any existing problematic styles */
+.emoji-picker {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 2rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #ffffff, #f8f9fa);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    margin-bottom: 2rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.emoji-picker:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+}
+
+.topic-content {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 2rem !important;
+    width: 100%;
+}
+
+.topic-left {
+    flex: 0 0 auto;
+    min-width: 200px;
+    position: relative;
+}
+
+.topic {
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: #2c3e50;
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+    margin: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.topic:hover {
+    background-color: #f0f4f8;
+}
+
+.topic.animate {
+    animation: flip-scale-down 0.6s linear both;
+}
+
+.emoji-container {
+    display: flex !important;
+    flex-wrap: wrap !important;
+    gap: 1.5rem !important;
+    flex: 1;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.emoji-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.emoji-item:hover {
+    transform: scale(1.05);
+}
+
+.emojiIcon {
+    font-size: 2.5rem;
+    width: 4rem;
+    height: 4rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: #f8f9fa;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    margin-bottom: 0.5rem;
+}
+
+.emojiIcon:hover {
+    background-color: #e9ecef;
+    transform: scale(1.1);
+}
+
+.emojiIcon.selected {
+    background-color: #e3f2fd;
+    border-color: #2196f3;
+    box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.2);
+}
+
+.emojiText {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #495057;
+    font-family: 'Roboto', sans-serif;
+    text-align: center;
+    margin-bottom: 0.2rem;
+    min-height: 1.2rem;
+}
+
+.emojiNumber {
+    font-size: 0.8rem;
+    font-weight: bold;
+    color: #2196f3;
+    font-family: 'Roboto', sans-serif;
+    background-color: #e3f2fd;
+    padding: 0.2rem 0.5rem;
+    border-radius: 12px;
+    min-width: 1.5rem;
+    text-align: center;
+}
+
+.emojiText.hide,
+.emojiNumber.hide {
+    display: none;
+}
+
+.topics-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    padding: 2rem;
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .topic-content {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .topic-left {
+        min-width: auto;
+    }
+    
+    .topic {
+        font-size: 1.5rem;
+        text-align: center;
+    }
+    
+    .emoji-container {
+        justify-content: center;
+    }
+    
+    .topics-container {
+        padding: 1rem;
+    }
+}
+
 @keyframes flip-scale-down {
     0% {
         transform: scale(1) rotate3d(-1, 1, 0, 0deg);
-        opacity: .6;
+        opacity: 0.6;
     }
     50% {
         transform: scale(0.4) rotate3d(-1, 1, 0, -90deg);
-        opacity: .6;
+        opacity: 0.6;
     }
     100% {
         transform: scale(1) rotate3d(-1, 1, 0, 0deg);
     }
 }
-
-.container {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
-    place-items: center;
-    row-gap: 2em;
-}
-
-.topic {
-    font-family: FjallaOne, Arial, Helvetica, sans-serif;
-    font-size: 2.5em;
-}
-
-.option {
-    cursor: pointer;
-    font-size: 4em;
-    opacity: .4;
-    padding: 10px;
-}
-
-.option .voteCount {
-    margin-left: 5px;
-    font-family: FjallaOne, Arial, Helvetica, sans-serif;
-    font-size: 0.6em;
-    text-shadow: none;
-}
-
-.option.voted {
-    opacity: 1;
-    text-shadow: 2px 2px lightgray;
-    animation: flip-scale-down 0.4s linear both;
-} 

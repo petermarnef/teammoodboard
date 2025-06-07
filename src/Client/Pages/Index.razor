@@ -7,121 +7,196 @@
 @inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 @implements IAsyncDisposable
 
-@if (client.Initialised)
-{
-    <div class="container">
+<div class="page-header" style="text-align: center; margin-bottom: 0.67rem;">
+    <h1 style="font-family: 'Poppins', sans-serif; font-size: 3rem; font-weight: 700; color: #2c3e50;">Team Moodboard</h1>
+    <p style="font-family: 'Roboto', sans-serif; font-size: 1.2rem; color: #495057;">Find out how your team feels!</p>
+</div>
+
+<div class="topics-container" style="padding-top: 0.5rem;">
+    <div class="list-container" style="margin: 0 auto 2rem auto; width: calc(100% - 2rem); padding: 0.5rem 1rem; border-radius: 16px; background: #f8f8f8; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+        <ol style="list-style: decimal; padding-left: 1.5rem; font-family: 'Roboto', sans-serif; font-size: 0.9rem; color: #6c757d; text-align: left;">
+            <li style="margin-bottom: 0.5rem;">This page gives you a unique moodboard</li>
+            <li style="margin-bottom: 0.5rem;">Share the URL with your team</li>
+            <li style="margin-bottom: 0.5rem;">Start voting to reveal your team’s mood</li>
+            <li style="margin-bottom: 0.5rem;"><a href="http://teammoodboard.com/" style="color: #64b5f6; text-decoration: none;">Click here</a> for a new moodboard</li>
+        </ol>
+    </div>
+
+    @if (client.Initialised)
+    {
         @foreach (var topic in client.Moodboard.Configuration.Topics)
         {
-            <div class="topic">@topic.Name</div>
-            @foreach (var option in client.Moodboard.Configuration.Options)
-            {
-                var alreadyVoted = AlreadyVoted(client.SessionId, topic.Id, option.Id);
-                <div class="option @(alreadyVoted ? "voted" : "")"
-                    @onclick="() => ProcessVote(client.SessionId, topic.Id, option.Id)">
-                    @option.Emoji <span class="voteCount">@GetVoteCountForOption(topic.Id, option.Id)</span>
-                </div>                    
-            }
+            <div class="emoji-picker" style="display: flex; flex-direction: column; padding: 2.5em; margin-bottom: 1rem; border: 1px solid #e0e0e0; border-radius: 16px; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                <div class="topic-content" style="display: flex; align-items: flex-start; gap: 1rem; width: 100%;">
+                    <div class="topic-left" style="flex: 0 0 auto; min-width: 200px;">
+                        <div class="topic" style="font-family: 'Poppins', sans-serif; font-size: 2.2rem; font-weight: 600; color: #2c3e50; cursor: pointer; padding: 0.5rem; border-radius: 8px; background-color: transparent;"
+                             @onclick="() => ShowAllEmojis(topic.Id)">@topic.Name</div>
+                    </div>
+                    <div class="emoji-container" style="display: flex; flex-wrap: wrap; gap: 1rem; flex: 1; align-items: flex-start;">
+                        @foreach (var option in client.Moodboard.Configuration.Options)
+                        {
+                            var isSelected = AlreadyVoted(client.SessionId, topic.Id, option.Id);
+                            var voteCount = GetVoteCountForOption(topic.Id, option.Id);
+                            var showVoteCount = showVoteCountForTopic.ContainsKey(topic.Id) && showVoteCountForTopic[topic.Id];
+
+                            <div class="emoji-item" style="display: flex; flex-direction: column; align-items: center; cursor: pointer;" @onclick="() => Vote(topic.Id, option.Id)">
+                                <div class="emojiIcon @(isSelected ? "selected" : "")" style="font-size: 2.5rem; width: 4rem; height: 4rem; display: flex; align-items: center; justify-content: center; border-radius: 50%; background-color: #f8f9fa; border: 2px solid @(isSelected ? "#64b5f6" : "transparent"); font-weight: @(isSelected ? "bold" : "normal"); margin-bottom: 0.5rem;">
+                                    <span>@option.Emoji</span>
+                                </div>
+                                <div class="emojiText" style="font-size: 0.85rem; font-weight: 500; color: #495057; font-family: 'Roboto', sans-serif; text-align: center; margin-bottom: 0.2rem;">@option.Text</div>
+                                @if (showVoteCount)
+                                {
+                                    <div class="emojiNumber @(voteCount == 0 ? "hide" : "")" style="font-size: 0.8rem; font-weight: bold; color: #2196f3; background-color: #e3f2fd; padding: 0.2rem 0.5rem; border-radius: 12px; text-align: center;">@voteCount</div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
         }
-    </div>
-}
+    }
+    else
+    {
+        <div>Loading...</div>
+    }
+</div>
 
 @code {
-    [Parameter]
-    public string moodboardIdParameter { get; set; }
 
-    private Client client = new()
+[Parameter]
+public string moodboardIdParameter { get; set; }
+
+private Client client = new()
+{
+    HubConnection = null,
+    Moodboard = null,
+    SessionId = Guid.Empty,
+    Initialised = false
+};
+
+private Dictionary<int, bool> showAllEmojisForTopic = new();
+private Dictionary<int, bool> showVoteCountForTopic = new();
+
+protected override async Task OnInitializedAsync()
+{
+    client.HubConnection = await InitialiseHubConnection();
+    client.Moodboard = await InitialiseMoodboard();
+    client.SessionId = await InitialiseSessionId(client.Moodboard.Id);
+
+    // Initialize state for all topics
+    foreach (var topic in client.Moodboard.Configuration.Topics)
     {
-        HubConnection = null,
-        Moodboard = null,
-        SessionId = Guid.Empty,
-        Initialised = false
-    };
-
-    protected override async Task OnInitializedAsync()
-    {
-        client.HubConnection = await InitialiseHubConnection();
-        client.Moodboard = await InitialiseMoodboard();
-        client.SessionId = await InitialiseSessionId(client.Moodboard.Id);
-
-        NavigationManager.NavigateTo($"/{client.Moodboard.Id}");
-        await SaveSessionInLocalStorage(client.Moodboard.Id, client.SessionId);
-        client.Initialised = true;
+        showAllEmojisForTopic[topic.Id] = true; // Start with emojis visible
+        showVoteCountForTopic[topic.Id] = false; // Start with text visible
     }
 
-    async Task<Guid> InitialiseSessionId(Guid moodboardId)
-    {
-        var existingSessionId = await LocalStorage.GetItemAsync<Guid>(moodboardId.ToString());
-        if (existingSessionId != Guid.Empty)
-            return existingSessionId;
-        else
-            return Guid.NewGuid();
-    }
+    NavigationManager.NavigateTo($"/{client.Moodboard.Id}");
+    await SaveSessionInLocalStorage(client.Moodboard.Id, client.SessionId);
+    client.Initialised = true;
+}
 
-    async Task<HubConnection> InitialiseHubConnection()
-    {
-        var hubConnection = new HubConnectionBuilder()
-            .WithUrl(NavigationManager.ToAbsoluteUri("/moodboardHub"))
-            .WithAutomaticReconnect()
-            .Build();
-        hubConnection.On<Moodboard>("MoodboardUpdate", (moodboard) => ProcessUpdateFromHub(moodboard));
-        await hubConnection.StartAsync();
-        return hubConnection;
-    }
+async Task<Guid> InitialiseSessionId(Guid moodboardId)
+{
+    var existingSessionId = await LocalStorage.GetItemAsync<Guid>(moodboardId.ToString());
+    if (existingSessionId != Guid.Empty)
+        return existingSessionId;
+    else
+        return Guid.NewGuid();
+}
 
-    async Task<Moodboard> InitialiseMoodboard()
-    {
-        Guid moodboardId;
-        var validMoodboardIdFound = Guid.TryParse(moodboardIdParameter, out moodboardId);
+async Task<HubConnection> InitialiseHubConnection()
+{
+    var hubConnection = new HubConnectionBuilder()
+        .WithUrl(NavigationManager.ToAbsoluteUri("/moodboardHub"))
+        .WithAutomaticReconnect()
+        .Build();
+    hubConnection.On<Moodboard>("MoodboardUpdate", (moodboard) => ProcessUpdateFromHub(moodboard));
+    await hubConnection.StartAsync();
+    return hubConnection;
+}
 
-        if (!validMoodboardIdFound)
-            moodboardId = Guid.NewGuid();
+async Task<Moodboard> InitialiseMoodboard()
+{
+    var validMoodboardIdFound = Guid.TryParse(moodboardIdParameter, out var moodboardId);
+
+    if (!validMoodboardIdFound)
+        moodboardId = Guid.NewGuid();
             
-        return await client.HubConnection.InvokeAsync<Moodboard>("RegisterNewClient", moodboardId);
-    }
+    return await client.HubConnection.InvokeAsync<Moodboard>("RegisterNewClient", moodboardId);
+}
 
-    async Task SaveSessionInLocalStorage(Guid moodboardId, Guid sessionId)
-    {
-        await LocalStorage.SetItemAsync<Guid>(moodboardId.ToString(), sessionId);
-    }    
+async Task SaveSessionInLocalStorage(Guid moodboardId, Guid sessionId)
+{
+    await LocalStorage.SetItemAsync<Guid>(moodboardId.ToString(), sessionId);
+}    
 
-    void ProcessUpdateFromHub(Moodboard moodboard)
-    {
-        client.Moodboard = moodboard;
-        StateHasChanged();
-    }
+void ProcessUpdateFromHub(Moodboard moodboard)
+{
+    client.Moodboard = moodboard;
+    StateHasChanged();
+}
 
-    int GetVoteCountForOption(int topicId, int optionId)
-    {
-        return client.Moodboard.Votes.Count(vote => 
-            vote.TopicId == topicId && vote.OptionId == optionId);
-    }    
+int GetVoteCountForOption(int topicId, int optionId)
+{
+    return client.Moodboard.Votes.Count(vote => 
+        vote.TopicId == topicId && vote.OptionId == optionId);
+}    
 
-    bool AlreadyVoted(Guid sessionId, int topicId, int optionId)
-    {
-        return client.Moodboard.Votes.Any(vote =>
-            vote.ClientSessionId == sessionId
-            && vote.TopicId == topicId
-            && vote.OptionId == optionId);
-    }
+bool AlreadyVoted(Guid sessionId, int topicId, int optionId)
+{
+    return client.Moodboard.Votes.Any(vote =>
+        vote.ClientSessionId == sessionId
+        && vote.TopicId == topicId
+        && vote.OptionId == optionId);
+}
 
-    async Task ProcessVote(Guid sessionId, int topicId, int optionId)
-    {
-        var newVote = new Vote(sessionId, topicId, optionId);
+async Task ProcessVote(Guid sessionId, int topicId, int optionId)
+{
+    var newVote = new Vote(sessionId, topicId, optionId);
 
-        var existingVoteForSameTopic = client.Moodboard.Votes.Where(vote => 
-            vote.ClientSessionId == sessionId
-            && vote.TopicId == topicId).SingleOrDefault();
+    var existingVoteForSameTopic = client.Moodboard.Votes.Where(vote => 
+        vote.ClientSessionId == sessionId
+        && vote.TopicId == topicId).SingleOrDefault();
 
-        if (existingVoteForSameTopic == newVote)
-            return;
+    if (existingVoteForSameTopic == newVote)
+        return;
 
-        if (existingVoteForSameTopic != null)
-            client.Moodboard.Votes.Remove(existingVoteForSameTopic);
+    if (existingVoteForSameTopic != null)
+        client.Moodboard.Votes.Remove(existingVoteForSameTopic);
 
-        client.Moodboard.Votes.Add(newVote);
-        await client.HubConnection.SendAsync("ProcessUpdatedMoodboard", client.Moodboard);
-    }
+    client.Moodboard.Votes.Add(newVote);
+    
+    // Show vote counts for this topic when user clicks an emoji
+    showVoteCountForTopic[topicId] = true;
+    
+    await client.HubConnection.SendAsync("ProcessUpdatedMoodboard", client.Moodboard);
+}
 
-    public ValueTask DisposeAsync() =>
-        client.HubConnection.DisposeAsync();
+void ShowAllEmojis(int topicId)
+{
+    showAllEmojisForTopic[topicId] = true;
+    StateHasChanged();
+}
+
+void ShowResults(int topicId)
+{
+    showAllEmojisForTopic[topicId] = false;
+    // Keep showing vote counts once user has voted for this topic
+    StateHasChanged();
+}
+
+bool HasSelectedEmoji(int topicId)
+{
+    return client.Moodboard.Votes.Any(vote => 
+        vote.ClientSessionId == client.SessionId && vote.TopicId == topicId);
+}
+
+async Task Vote(int topicId, int optionId)
+{
+    await ProcessVote(client.SessionId, topicId, optionId);
+}
+
+public ValueTask DisposeAsync() =>
+    client.HubConnection.DisposeAsync();
+
 }
