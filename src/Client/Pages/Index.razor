@@ -12,17 +12,16 @@
     <div class="topics-container">
         @foreach (var topic in client.Moodboard.Configuration.Topics)
         {
-            <div class="emoji-picker" style="display: flex; flex-direction: column; padding: 2rem; margin-bottom: 2rem; border: 1px solid #e0e0e0; border-radius: 16px; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
-                <div class="topic-content" style="display: flex; align-items: flex-start; gap: 2rem; width: 100%;">
+            <div class="emoji-picker" style="display: flex; flex-direction: column; padding: 1rem; margin-bottom: 1rem; border: 1px solid #e0e0e0; border-radius: 16px; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                <div class="topic-content" style="display: flex; align-items: flex-start; gap: 1rem; width: 100%;">
                     <!-- Topic text on the left -->
                     <div class="topic-left" style="flex: 0 0 auto; min-width: 200px;">
-                        <div class="topic @(animateTopicForTopic.ContainsKey(topic.Id) && animateTopicForTopic[topic.Id] ? "animate" : "")"
-                             style="font-family: 'Poppins', sans-serif; font-size: 2.2rem; font-weight: 600; color: #2c3e50; cursor: pointer; padding: 0.5rem; border-radius: 8px; background-color: transparent;"
+                        <div class="topic" style="font-family: 'Poppins', sans-serif; font-size: 2.2rem; font-weight: 600; color: #2c3e50; cursor: pointer; padding: 0.5rem; border-radius: 8px; background-color: transparent;"
                              @onclick="() => ShowAllEmojis(topic.Id)">@topic.Name</div>
                     </div>
 
                     <!-- Emojis on the right -->
-                    <div class="emoji-container" style="display: flex; flex-wrap: wrap; gap: 1.5rem; flex: 1; align-items: flex-start;">
+                    <div class="emoji-container" style="display: flex; flex-wrap: wrap; gap: 1rem; flex: 1; align-items: flex-start;">
                         @foreach (var option in client.Moodboard.Configuration.Options)
                         {
                             var isSelected = AlreadyVoted(client.SessionId, topic.Id, option.Id);
@@ -65,7 +64,6 @@ private Client client = new()
 };
 
 private Dictionary<int, bool> showAllEmojisForTopic = new();
-private Dictionary<int, bool> animateTopicForTopic = new();
 private Dictionary<int, bool> showVoteCountForTopic = new();
 
 protected override async Task OnInitializedAsync()
@@ -78,7 +76,6 @@ protected override async Task OnInitializedAsync()
     foreach (var topic in client.Moodboard.Configuration.Topics)
     {
         showAllEmojisForTopic[topic.Id] = true; // Start with emojis visible
-        animateTopicForTopic[topic.Id] = false;
         showVoteCountForTopic[topic.Id] = false; // Start with text visible
     }
 
@@ -161,9 +158,6 @@ async Task ProcessVote(Guid sessionId, int topicId, int optionId)
     // Show vote counts for this topic when user clicks an emoji
     showVoteCountForTopic[topicId] = true;
     
-    // Trigger topic animation
-    await TriggerTopicAnimation(topicId);
-    
     await client.HubConnection.SendAsync("ProcessUpdatedMoodboard", client.Moodboard);
 }
 
@@ -184,25 +178,6 @@ bool HasSelectedEmoji(int topicId)
 {
     return client.Moodboard.Votes.Any(vote => 
         vote.ClientSessionId == client.SessionId && vote.TopicId == topicId);
-}
-
-async Task TriggerTopicAnimation(int topicId)
-{
-    // Remove animation class first
-    animateTopicForTopic[topicId] = false;
-    StateHasChanged();
-    
-    // Force a reflow
-    await Task.Delay(1);
-    
-    // Add animation class
-    animateTopicForTopic[topicId] = true;
-    StateHasChanged();
-    
-    // Remove animation class after animation completes (0.6s duration)
-    await Task.Delay(600);
-    animateTopicForTopic[topicId] = false;
-    StateHasChanged();
 }
 
 async Task Vote(int topicId, int optionId)
