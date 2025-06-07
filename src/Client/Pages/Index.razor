@@ -55,8 +55,8 @@
                             <div class="emoji-option @(isSelected ? "selected" : "") @(hideEmoji ? "hide" : "")"
                                  @onclick="() => ProcessVote(client.SessionId, topic.Id, option.Id)">
                                 <div class="emojiIcon">@option.Emoji</div>
-                                <div class="emojiText @(showAllEmojis ? "" : "hide")">@option.Text</div>
-                                <div class="emojiNumber @(showAllEmojis ? "hide" : "")">@voteCount</div>
+                                <div class="emojiText @(hasVoted ? "hide" : "")">@option.Text</div>
+                                <div class="emojiNumber @(hasVoted ? "" : "hide")">@voteCount</div>
                             </div>
                             
                             emojiIndex++;
