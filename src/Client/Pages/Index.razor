@@ -12,15 +12,20 @@
     <div class="container">
         @foreach (var topic in client.Moodboard.Configuration.Topics)
         {
-            <div class="topic">@topic.Name</div>
-            @foreach (var option in client.Moodboard.Configuration.Options)
-            {
-                var alreadyVoted = AlreadyVoted(client.SessionId, topic.Id, option.Id);
-                <div class="option @(alreadyVoted ? "voted" : "")"
-                    @onclick="() => ProcessVote(client.SessionId, topic.Id, option.Id)">
-                    @option.Emoji <span class="voteCount">@GetVoteCountForOption(topic.Id, option.Id)</span>
-                </div>                    
-            }
+            <div class="card">
+                <div class="topic-name">@topic.Name</div>
+                <div class="options">
+                    @foreach (var option in client.Moodboard.Configuration.Options)
+                    {
+                        var alreadyVoted = AlreadyVoted(client.SessionId, topic.Id, option.Id);
+                        <div class="option @(alreadyVoted ? "voted" : "")"
+                             @onclick="() => ProcessVote(client.SessionId, topic.Id, option.Id)">
+                            @option.Emoji
+                            <span class="voteCount">@GetVoteCountForOption(topic.Id, option.Id)</span>
+                        </div>
+                    }
+                </div>
+            </div>
         }
     </div>
 }

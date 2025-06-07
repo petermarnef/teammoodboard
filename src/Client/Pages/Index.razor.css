@@ -1,45 +1,57 @@
-@keyframes flip-scale-down {
-    0% {
-        transform: scale(1) rotate3d(-1, 1, 0, 0deg);
-        opacity: .6;
-    }
-    50% {
-        transform: scale(0.4) rotate3d(-1, 1, 0, -90deg);
-        opacity: .6;
-    }
-    100% {
-        transform: scale(1) rotate3d(-1, 1, 0, 0deg);
-    }
-}
-
 .container {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
-    place-items: center;
-    row-gap: 2em;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.5rem;
+    padding-bottom: 40px;
 }
 
-.topic {
+.card {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 1rem;
+    width: 320px;
+    text-align: center;
+}
+
+.topic-name {
     font-family: FjallaOne, Arial, Helvetica, sans-serif;
-    font-size: 2.5em;
+    font-size: 1.8em;
+    margin-bottom: 0.5rem;
+}
+
+.options {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
 }
 
 .option {
     cursor: pointer;
-    font-size: 4em;
+    font-size: 3em;
+    position: relative;
     opacity: .4;
-    padding: 10px;
+    transition: transform .2s, opacity .2s;
 }
 
-.option .voteCount {
-    margin-left: 5px;
-    font-family: FjallaOne, Arial, Helvetica, sans-serif;
-    font-size: 0.6em;
-    text-shadow: none;
+.option:hover {
+    transform: scale(1.1);
 }
 
 .option.voted {
     opacity: 1;
-    text-shadow: 2px 2px lightgray;
-    animation: flip-scale-down 0.4s linear both;
-} 
+    transform: scale(1.2);
+}
+
+.option .voteCount {
+    position: absolute;
+    bottom: -0.4em;
+    right: -0.4em;
+    background: #fff;
+    border-radius: 50%;
+    font-family: FjallaOne, Arial, Helvetica, sans-serif;
+    font-size: 0.6em;
+    padding: 0.1em 0.4em;
+    box-shadow: 0 0 3px rgba(0,0,0,0.3);
+}
