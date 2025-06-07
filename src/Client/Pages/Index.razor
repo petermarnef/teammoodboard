@@ -100,6 +100,9 @@ protected override async Task OnInitializedAsync()
     NavigationManager.NavigateTo($"/{client.Moodboard.Id}");
     await SaveSessionInLocalStorage(client.Moodboard.Id, client.SessionId);
     client.Initialised = true;
+
+    // Ensure votes are restored correctly
+    ProcessUpdateFromHub(client.Moodboard);
 }
 
 async Task<Guid> InitialiseSessionId(Guid moodboardId)
