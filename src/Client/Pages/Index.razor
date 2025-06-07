@@ -16,7 +16,7 @@
                 <div class="topic-content" style="display: flex; align-items: flex-start; gap: 1rem; width: 100%;">
                     <!-- Topic text on the left -->
                     <div class="topic-left" style="flex: 0 0 auto; min-width: 200px;">
-                        <div class="topic" style="font-family: 'Poppins', sans-serif; font-size: 2.2rem; font-weight: @(HasSelectedEmoji(topic.Id) ? 600 : 500); color: #2c3e50; cursor: pointer; padding: 0.5rem; border-radius: 8px; background-color: transparent;"
+                        <div class="topic" style="font-family: 'Poppins', sans-serif; font-size: 2.2rem; font-weight: 600; color: #2c3e50; cursor: pointer; padding: 0.5rem; border-radius: 8px; background-color: transparent;"
                              @onclick="() => ShowAllEmojis(topic.Id)">@topic.Name</div>
                     </div>
 
