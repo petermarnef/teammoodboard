@@ -94,7 +94,7 @@ protected override async Task OnInitializedAsync()
     foreach (var topic in client.Moodboard.Configuration.Topics)
     {
         showAllEmojisForTopic[topic.Id] = true;
-        showVoteCountForTopic[topic.Id] = false;
+        showVoteCountForTopic[topic.Id] = true; // Ensure vote counts are visible after refresh
     }
 
     NavigationManager.NavigateTo($"/{client.Moodboard.Id}");
