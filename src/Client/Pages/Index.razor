@@ -36,6 +36,7 @@
                             var option = client.Moodboard.Configuration.Options[emojiIndex];
                             var isSelected = AlreadyVoted(client.SessionId, topic.Id, option.Id);
                             var voteCount = GetVoteCountForOption(topic.Id, option.Id);
+                            var showVoteCount = showVoteCountForTopic.ContainsKey(topic.Id) && showVoteCountForTopic[topic.Id];
                             
                             // Show/hide logic based on state
                             var hideEmoji = false;
@@ -55,8 +56,8 @@
                             <div class="emoji-option @(isSelected ? "selected" : "") @(hideEmoji ? "hide" : "")"
                                  @onclick="() => ProcessVote(client.SessionId, topic.Id, option.Id)">
                                 <div class="emojiIcon">@option.Emoji</div>
-                                <div class="emojiText @(hasVoted ? "hide" : "")">@option.Text</div>
-                                <div class="emojiNumber @(hasVoted ? "" : "hide")">@voteCount</div>
+                                <div class="emojiText @(showVoteCount ? "hide" : "")">@option.Text</div>
+                                <div class="emojiNumber @(showVoteCount ? "" : "hide")">@voteCount</div>
                             </div>
                             
                             emojiIndex++;
@@ -87,6 +88,7 @@ private Client client = new()
 
 private Dictionary<int, bool> showAllEmojisForTopic = new();
 private Dictionary<int, bool> animateTopicForTopic = new();
+private Dictionary<int, bool> showVoteCountForTopic = new();
 
 protected override async Task OnInitializedAsync()
 {
@@ -99,6 +101,7 @@ protected override async Task OnInitializedAsync()
     {
         showAllEmojisForTopic[topic.Id] = true; // Start with emojis visible
         animateTopicForTopic[topic.Id] = false;
+        showVoteCountForTopic[topic.Id] = false; // Start with text visible
     }
 
     NavigationManager.NavigateTo($"/{client.Moodboard.Id}");
@@ -177,6 +180,9 @@ async Task ProcessVote(Guid sessionId, int topicId, int optionId)
 
     client.Moodboard.Votes.Add(newVote);
     
+    // Show vote counts for this topic when user clicks an emoji
+    showVoteCountForTopic[topicId] = true;
+    
     // Trigger topic animation
     await TriggerTopicAnimation(topicId);
     
@@ -192,6 +198,7 @@ void ShowAllEmojis(int topicId)
 void ShowResults(int topicId)
 {
     showAllEmojisForTopic[topicId] = false;
+    // Keep showing vote counts once user has voted for this topic
     StateHasChanged();
 }
 
