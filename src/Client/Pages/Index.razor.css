@@ -1,45 +1,104 @@
+.emoji-picker {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 2rem;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(5, 1fr);
+    gap: 1rem;
+    width: 400px;
+    height: 500px;
+    justify-items: center;
+    align-items: center;
+}
+
+.grid-element {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.topic {
+    font-family: 'Lobster', Impact, sans-serif;
+    font-size: 4rem;
+    color: #000;
+    filter: drop-shadow(0 0 0.4rem grey);
+    text-align: center;
+    padding: 0 0.6em;
+    cursor: pointer;
+}
+
+.topic.animate {
+    animation: flip-scale-down 0.6s linear both;
+}
+
+.emoji-option {
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    width: 100%;
+    height: 100%;
+    justify-content: center;
+}
+
+.emoji-option.hide {
+    visibility: hidden;
+}
+
+.emoji-option.selected .emojiIcon {
+    border: 2px solid #000;
+    border-radius: 25%;
+}
+
+.emojiIcon {
+    font-size: 4em;
+    border: 2px solid transparent;
+    height: 1.25em;
+    width: 1.25em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 25%;
+}
+
+.emojiText {
+    font-size: 0.8em;
+    color: #666;
+    font-family: 'Roboto', sans-serif;
+    margin-top: 0.25rem;
+}
+
+.emojiNumber {
+    font-size: 0.8em;
+    font-weight: bold;
+    color: #333;
+    font-family: 'Roboto', sans-serif;
+    margin-top: 0.25rem;
+}
+
+.emojiText.hide,
+.emojiNumber.hide {
+    display: none;
+}
+
 @keyframes flip-scale-down {
     0% {
         transform: scale(1) rotate3d(-1, 1, 0, 0deg);
-        opacity: .6;
+        opacity: 0.6;
     }
     50% {
         transform: scale(0.4) rotate3d(-1, 1, 0, -90deg);
-        opacity: .6;
+        opacity: 0.6;
     }
     100% {
         transform: scale(1) rotate3d(-1, 1, 0, 0deg);
     }
-}
-
-.container {
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr;
-    place-items: center;
-    row-gap: 2em;
-}
-
-.topic {
-    font-family: FjallaOne, Arial, Helvetica, sans-serif;
-    font-size: 2.5em;
-}
-
-.option {
-    cursor: pointer;
-    font-size: 4em;
-    opacity: .4;
-    padding: 10px;
-}
-
-.option .voteCount {
-    margin-left: 5px;
-    font-family: FjallaOne, Arial, Helvetica, sans-serif;
-    font-size: 0.6em;
-    text-shadow: none;
-}
-
-.option.voted {
-    opacity: 1;
-    text-shadow: 2px 2px lightgray;
-    animation: flip-scale-down 0.4s linear both;
 } 

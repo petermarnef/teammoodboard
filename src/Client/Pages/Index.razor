@@ -9,20 +9,67 @@
 
 @if (client.Initialised)
 {
-    <div class="container">
-        @foreach (var topic in client.Moodboard.Configuration.Topics)
-        {
-            <div class="topic">@topic.Name</div>
-            @foreach (var option in client.Moodboard.Configuration.Options)
-            {
-                var alreadyVoted = AlreadyVoted(client.SessionId, topic.Id, option.Id);
-                <div class="option @(alreadyVoted ? "voted" : "")"
-                    @onclick="() => ProcessVote(client.SessionId, topic.Id, option.Id)">
-                    @option.Emoji <span class="voteCount">@GetVoteCountForOption(topic.Id, option.Id)</span>
-                </div>                    
-            }
-        }
-    </div>
+    @foreach (var topic in client.Moodboard.Configuration.Topics)
+    {
+        <div class="emoji-picker" style="margin-bottom: 3rem;">
+            <div class="grid" 
+                 @onmouseenter="() => ShowAllEmojis(topic.Id)" 
+                 @onmouseleave="() => ShowResults(topic.Id)">
+                @{
+                    var emojiIndex = 0;
+                    var gridElementPositions = new[] { 2, 4, 6, 10, 12, 14 };
+                    var showAllEmojis = showAllEmojisForTopic.ContainsKey(topic.Id) && showAllEmojisForTopic[topic.Id];
+                    var hasVoted = HasSelectedEmoji(topic.Id);
+                }
+                @for (int i = 1; i <= 15; i++)
+                {
+                    <div class="grid-element">
+                        @if (i == 8)
+                        {
+                            <!-- Topic in center -->
+                            <div class="topic @(animateTopicForTopic.ContainsKey(topic.Id) && animateTopicForTopic[topic.Id] ? "animate" : "")"
+                                 @onclick="() => ShowAllEmojis(topic.Id)">@topic.Name</div>
+                        }
+                        else if (gridElementPositions.Contains(i) && emojiIndex < client.Moodboard.Configuration.Options.Count)
+                        {
+                            <!-- Emoji option -->
+                            var option = client.Moodboard.Configuration.Options[emojiIndex];
+                            var isSelected = AlreadyVoted(client.SessionId, topic.Id, option.Id);
+                            var voteCount = GetVoteCountForOption(topic.Id, option.Id);
+                            
+                            // Show/hide logic based on state
+                            var hideEmoji = false;
+                            if (showAllEmojis)
+                            {
+                                hideEmoji = false; // Show all emojis when hovering
+                            }
+                            else if (hasVoted)
+                            {
+                                hideEmoji = voteCount == 0; // Show only emojis with votes when not hovering and has voted
+                            }
+                            else
+                            {
+                                hideEmoji = true; // Hide all emojis when not hovering and no vote
+                            }
+                            
+                            <div class="emoji-option @(isSelected ? "selected" : "") @(hideEmoji ? "hide" : "")"
+                                 @onclick="() => ProcessVote(client.SessionId, topic.Id, option.Id)">
+                                <div class="emojiIcon">@option.Emoji</div>
+                                <div class="emojiText @(showAllEmojis ? "" : "hide")">@option.Text</div>
+                                <div class="emojiNumber @(showAllEmojis ? "hide" : "")">@voteCount</div>
+                            </div>
+                            
+                            emojiIndex++;
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+}
+else
+{
+    <div>Loading...</div>
 }
 
 @code {
@@ -38,11 +85,21 @@ private Client client = new()
     Initialised = false
 };
 
+private Dictionary<int, bool> showAllEmojisForTopic = new();
+private Dictionary<int, bool> animateTopicForTopic = new();
+
 protected override async Task OnInitializedAsync()
 {
     client.HubConnection = await InitialiseHubConnection();
     client.Moodboard = await InitialiseMoodboard();
     client.SessionId = await InitialiseSessionId(client.Moodboard.Id);
+
+    // Initialize state for all topics
+    foreach (var topic in client.Moodboard.Configuration.Topics)
+    {
+        showAllEmojisForTopic[topic.Id] = false; // Start with emojis hidden
+        animateTopicForTopic[topic.Id] = false;
+    }
 
     NavigationManager.NavigateTo($"/{client.Moodboard.Id}");
     await SaveSessionInLocalStorage(client.Moodboard.Id, client.SessionId);
@@ -119,7 +176,48 @@ async Task ProcessVote(Guid sessionId, int topicId, int optionId)
         client.Moodboard.Votes.Remove(existingVoteForSameTopic);
 
     client.Moodboard.Votes.Add(newVote);
+    
+    // Trigger topic animation
+    await TriggerTopicAnimation(topicId);
+    
     await client.HubConnection.SendAsync("ProcessUpdatedMoodboard", client.Moodboard);
+}
+
+void ShowAllEmojis(int topicId)
+{
+    showAllEmojisForTopic[topicId] = true;
+    StateHasChanged();
+}
+
+void ShowResults(int topicId)
+{
+    showAllEmojisForTopic[topicId] = false;
+    StateHasChanged();
+}
+
+bool HasSelectedEmoji(int topicId)
+{
+    return client.Moodboard.Votes.Any(vote => 
+        vote.ClientSessionId == client.SessionId && vote.TopicId == topicId);
+}
+
+async Task TriggerTopicAnimation(int topicId)
+{
+    // Remove animation class first
+    animateTopicForTopic[topicId] = false;
+    StateHasChanged();
+    
+    // Force a reflow
+    await Task.Delay(1);
+    
+    // Add animation class
+    animateTopicForTopic[topicId] = true;
+    StateHasChanged();
+    
+    // Remove animation class after animation completes (0.6s duration)
+    await Task.Delay(600);
+    animateTopicForTopic[topicId] = false;
+    StateHasChanged();
 }
 
 public ValueTask DisposeAsync() =>
