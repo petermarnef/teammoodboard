@@ -44,3 +44,4 @@ This app is build with [ASP.NET Core Blazor](https://docs.microsoft.com/en-us/as
 
 - Emoji picker
 - Randomize emoji's (twice the fun)
+# Force rebuild - Sat Jun  7 22:59:27 CEST 2025
