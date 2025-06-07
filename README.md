@@ -1,47 +1,46 @@
 # Team Moodboard
 
-A web app you can use to measure the mood of your team. The app is deployed, and free to use, on https://teammoodboard.com.
+A simple web app to discover how your team is feeling! 🤠
 
-This app is build with [ASP.NET Core Blazor](https://docs.microsoft.com/en-us/aspnet/core/blazor) (webassembly) and [SignalR](https://docs.microsoft.com/en-us/aspnet/core/signalr/introduction).
+Share a unique URL with your team, let everyone vote with emojis, and see the collective mood in real-time. It's live and free to use at [teammoodboard.com](https://teammoodboard.com).
 
-## How to get started contributing code
+Built with [ASP.NET Core Blazor WebAssembly](https://docs.microsoft.com/en-us/aspnet/core/blazor) and [SignalR](https://docs.microsoft.com/en-us/aspnet/core/signalr/introduction) for that real-time magic ✨
 
-### Prerequisites
+## Contributing
 
-- Have the .NET Core SDK installed (v5)
+I'd love your help making this better! Here's how to get started:
 
-### Next steps
+### What you'll need
 
-- Clone the code
-- Start the app by going to `/src/Server` and running `dotnet run`
-- Or use the `dotnet watch run` command during development
-- Create a PR on the master branch
+- [.NET 9.0 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
+- Your favorite code editor (VS Code works great!)
 
-### Main files
+### Getting up and running
 
-- On the Client
-  - `/src/Client/Pages/Index.razor` - this file contains most of the client code
-- On the Server
-  - `/src/Server/Hubs/VoteHub.cs` - this file is the SignalR hub which is the gateway for the backend code
+1. Clone this repository
+2. Navigate to `/src/Server` 
+3. Run `dotnet run` (or `dotnet watch run` for hot reload during development)
+4. Open your browser and start clicking those emojis!
+
+### Code structure
+
+The magic happens in just a few key files:
+
+**Client side:**
+- `/src/Client/Pages/Index.razor` - The main UI and voting logic
+
+**Server side:**
+- `/src/Server/Hubs/VoteHub.cs` - SignalR hub handling real-time communication
+
+### Making changes
+
+Just create a Pull Request to the `main` branch and I'll take a look!
 
 ## Deployment
 
-- Code commited to the `production` branch is automatically deployed to https://teammoodboard.com
-- The main reason the `production` branch is deployed and not `master` is that we want to limit production deploys as the current state of the application is held in memory - and as such, a deploy wipes the state and all ongoing moodboards
+Deployment is fully automated:
+1. Create a PR to `main`
+2. Once merged, GitHub Actions builds and deploys to Azure
+3. Your changes go live at [teammoodboard.com](https://teammoodboard.com)
 
-## Todo
-
-- Work on the UI/UX
-- Make the app responsive, also on mobile
-- Make topics and vote options configurable when creating a new moodboard
-- Make it possible to have N number of topics/options (CSS change)
-- Do some SEO
-- Move the state of the application out of the web app
-- Cleanup the .vscode files and get debugging working
-- Add application insights
-
-### Enhancements
-
-- Emoji picker
-- Randomize emoji's (twice the fun)
-# Force rebuild - Sat Jun  7 22:59:27 CEST 2025
+**Heads up:** Since moodboard state lives in memory, each deployment resets all active sessions. I know, I know - it's on my list to fix! 😅
