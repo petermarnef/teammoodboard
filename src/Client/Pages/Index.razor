@@ -9,28 +9,42 @@
 
 @if (client.Initialised)
 {
-    @foreach (var topic in client.Moodboard.Configuration.Topics)
-    {
-        <div class="emoji-picker" style="margin-bottom: 3rem;">
-            <div class="topic @(animateTopicForTopic.ContainsKey(topic.Id) && animateTopicForTopic[topic.Id] ? "animate" : "")"
-                 @onclick="() => ShowAllEmojis(topic.Id)">@topic.Name</div>
-
-            <!-- Horizontal layout for emojis -->
-            <div class="emoji-container">
-                @foreach (var option in client.Moodboard.Configuration.Options)
-                {
-                    var isSelected = AlreadyVoted(client.SessionId, topic.Id, option.Id);
-                    var voteCount = GetVoteCountForOption(topic.Id, option.Id);
-                    var showVoteCount = showVoteCountForTopic.ContainsKey(topic.Id) && showVoteCountForTopic[topic.Id];
-
-                    <div class="emojiIcon">
-                        <span>@option.Emoji</span>
-                        <div class="emojiText">@option.Description</div>
+    <div class="topics-container">
+        @foreach (var topic in client.Moodboard.Configuration.Topics)
+        {
+            <div class="emoji-picker" style="display: flex; flex-direction: column; padding: 2rem; margin-bottom: 2rem; border: 1px solid #e0e0e0; border-radius: 16px; background: white; box-shadow: 0 4px 12px rgba(0,0,0,0.08);">
+                <div class="topic-content" style="display: flex; align-items: flex-start; gap: 2rem; width: 100%;">
+                    <!-- Topic text on the left -->
+                    <div class="topic-left" style="flex: 0 0 auto; min-width: 200px;">
+                        <div class="topic @(animateTopicForTopic.ContainsKey(topic.Id) && animateTopicForTopic[topic.Id] ? "animate" : "")"
+                             style="font-family: 'Poppins', sans-serif; font-size: 1.8rem; font-weight: 600; color: #2c3e50; cursor: pointer; padding: 0.5rem; border-radius: 8px;"
+                             @onclick="() => ShowAllEmojis(topic.Id)">@topic.Name</div>
                     </div>
-                }
+
+                    <!-- Emojis on the right -->
+                    <div class="emoji-container" style="display: flex; flex-wrap: wrap; gap: 1.5rem; flex: 1; align-items: flex-start;">
+                        @foreach (var option in client.Moodboard.Configuration.Options)
+                        {
+                            var isSelected = AlreadyVoted(client.SessionId, topic.Id, option.Id);
+                            var voteCount = GetVoteCountForOption(topic.Id, option.Id);
+                            var showVoteCount = showVoteCountForTopic.ContainsKey(topic.Id) && showVoteCountForTopic[topic.Id];
+
+                            <div class="emoji-item" style="display: flex; flex-direction: column; align-items: center; cursor: pointer;" @onclick="() => Vote(topic.Id, option.Id)">
+                                <div class="emojiIcon @(isSelected ? "selected" : "")" style="font-size: 2.5rem; width: 4rem; height: 4rem; display: flex; align-items: center; justify-content: center; border-radius: 50%; background-color: #f8f9fa; border: 2px solid transparent; margin-bottom: 0.5rem;">
+                                    <span>@option.Emoji</span>
+                                </div>
+                                <div class="emojiText" style="font-size: 0.85rem; font-weight: 500; color: #495057; font-family: 'Roboto', sans-serif; text-align: center; margin-bottom: 0.2rem;">@option.Text</div>
+                                @if (showVoteCount)
+                                {
+                                    <div class="emojiNumber @(voteCount == 0 ? "hide" : "")" style="font-size: 0.8rem; font-weight: bold; color: #2196f3; background-color: #e3f2fd; padding: 0.2rem 0.5rem; border-radius: 12px; text-align: center;">@voteCount</div>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
             </div>
-        </div>
-    }
+        }
+    </div>
 }
 else
 {
@@ -189,6 +203,11 @@ async Task TriggerTopicAnimation(int topicId)
     await Task.Delay(600);
     animateTopicForTopic[topicId] = false;
     StateHasChanged();
+}
+
+async Task Vote(int topicId, int optionId)
+{
+    await ProcessVote(client.SessionId, topicId, optionId);
 }
 
 public ValueTask DisposeAsync() =>
