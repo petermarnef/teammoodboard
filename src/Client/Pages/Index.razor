@@ -49,7 +49,7 @@
                             }
                             else
                             {
-                                hideEmoji = true; // Hide all emojis when not hovering and no vote
+                                hideEmoji = false; // Show all emojis when not hovering and no vote (changed from true)
                             }
                             
                             <div class="emoji-option @(isSelected ? "selected" : "") @(hideEmoji ? "hide" : "")"
@@ -97,7 +97,7 @@ protected override async Task OnInitializedAsync()
     // Initialize state for all topics
     foreach (var topic in client.Moodboard.Configuration.Topics)
     {
-        showAllEmojisForTopic[topic.Id] = false; // Start with emojis hidden
+        showAllEmojisForTopic[topic.Id] = true; // Start with emojis visible
         animateTopicForTopic[topic.Id] = false;
     }
 
