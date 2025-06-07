@@ -94,14 +94,13 @@ protected override async Task OnInitializedAsync()
     foreach (var topic in client.Moodboard.Configuration.Topics)
     {
         showAllEmojisForTopic[topic.Id] = true;
-        showVoteCountForTopic[topic.Id] = true; // Ensure vote counts are visible after refresh
+        showVoteCountForTopic[topic.Id] = false;
     }
 
     NavigationManager.NavigateTo($"/{client.Moodboard.Id}");
     await SaveSessionInLocalStorage(client.Moodboard.Id, client.SessionId);
     client.Initialised = true;
 
-    // Ensure votes are restored correctly
     ProcessUpdateFromHub(client.Moodboard);
 }
 
