@@ -22,7 +22,7 @@ public class Moodboard
             new List<Topic> {
             new Topic(1, "Team"),
             new Topic(2, "Process"),
-            new Topic(3, "End Result"),
+            new Topic(3, "Result"),
             new Topic(4, "How I Feel")
         },
             new List<Option> {
